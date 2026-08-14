@@ -38,7 +38,7 @@ export default function Home() {
             <a className="transition-colors hover:text-foreground" href="#method">Method</a>
             <a className="transition-colors hover:text-foreground" href="#pricing">Pricing</a>
           </nav>
-          <div className="flex items-center gap-2"><ThemeToggle className="hidden sm:inline-flex" />{!user ? <button type="button" onClick={signIn} className="hidden px-3 py-2 text-xs font-bold text-muted-foreground hover:text-foreground sm:inline-flex">Sign in</button> : null}<Button onClick={goToWorkspace} className="h-10 rounded-full bg-[#17201e] px-5 text-xs font-bold text-[#f8f7f2] shadow-none hover:bg-[#293630]">
+          <div className="flex items-center gap-2"><ThemeToggle className="hidden sm:inline-flex" />{!user ? <button type="button" onClick={signIn} className="hidden px-3 py-2 text-xs font-bold text-muted-foreground hover:text-foreground sm:inline-flex">Sign in</button> : null}<Button onClick={goToWorkspace} className="h-10 rounded-full px-5 text-xs font-bold shadow-none">
             {user ? "Open workspace" : "Start free trial"}<ArrowRight className="ml-2 h-3.5 w-3.5" />
           </Button></div>
         </div>
@@ -56,7 +56,7 @@ export default function Home() {
                 Cresna turns approved Shopify data into a Business Brain, finds evidence-backed opportunities, creates reviewable work, and measures what changed after you act.
               </p>
               <div className="reveal-up-delay mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-                <Button onClick={goToWorkspace} size="lg" className="h-14 rounded-full bg-[#17201e] px-7 text-sm font-bold text-[#f8f7f2] hover:bg-[#293630]">Start your 14-day trial <ArrowRight className="ml-2 h-4 w-4" /></Button>
+                <Button onClick={goToWorkspace} size="lg" className="h-14 rounded-full px-7 text-sm font-bold">Start your 14-day trial <ArrowRight className="ml-2 h-4 w-4" /></Button>
                 <span className="text-xs font-medium text-[#65706b]">No store data is read until you approve access.</span>
               </div>
             </div>
