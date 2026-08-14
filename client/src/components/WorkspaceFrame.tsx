@@ -1,5 +1,5 @@
 import DashboardLayout from "@/components/DashboardLayout";
-import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, LockKeyhole } from "lucide-react";
 import { useLocation } from "wouter";
 
 export function WorkspaceFrame({
@@ -26,6 +26,11 @@ export function WorkspaceFrame({
       </div>
     </DashboardLayout>
   );
+}
+
+export function UnpaidWorkspaceState({ title, detail }: { title: string; detail: string }) {
+  const [, setLocation] = useLocation();
+  return <section className="rounded-[1.35rem] border border-border bg-card p-6 text-card-foreground shadow-[0_8px_30px_rgba(23,32,30,0.04)] sm:p-8"><div className="grid min-h-[295px] place-items-center rounded-xl border border-dashed border-border bg-muted px-6 text-center"><div className="max-w-lg"><span className="mx-auto grid h-11 w-11 place-items-center rounded-full bg-[#d9fa55] text-[#17201e]"><LockKeyhole className="h-5 w-5" /></span><p className="eyebrow mt-5 text-[10px] text-muted-foreground">Verified unpaid preview</p><h2 className="mt-3 text-xl font-extrabold tracking-[-0.045em]">{title}</h2><p className="mt-3 text-sm leading-6 text-muted-foreground">{detail} Cresna shows no merchant data and disables paid actions in this no-subscription state.</p><button onClick={() => setLocation("/app/preview/billing")} className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#17201e] px-5 py-3 text-xs font-bold text-[#f8f7f2] hover:bg-[#293630]">View trial and plan choices<ArrowUpRight className="h-3.5 w-3.5" /></button></div></div></section>;
 }
 
 export function EmptyWorkspaceCard({ title, children, action, onAction }: { title: string; children: React.ReactNode; action?: string; onAction?: () => void }) {

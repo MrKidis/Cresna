@@ -46,3 +46,12 @@
 - [x] Scope recommendation-to-AI generation to categories with a truthful reviewable draft, and provide concrete generation guidance for every other approved recommendation type.
 - [x] Add deterministic coverage for approved-recommendation handoff into the linked custom-AI draft workflow.
 - [x] Add a deterministic server-side contract test for linked draft metadata, supported recommendation categories, and recommendation ID propagation.
+- [x] Bind permanent founder access to the configured owner identity, independent of mutable UI roles, and prevent access to owner-only data for all other users.
+- [x] Move founder controls into a separate Owner Panel and add aggregate, privacy-preserving owner intelligence for users, store connections, subscriptions, trials, and beta feedback.
+- [ ] Add a normal unpaid-user preview that shows the true no-subscription state without fabricating user or store data.
+- [ ] Add dark mode, theme persistence, and premium visual refinement across the public site and workspace.
+- [x] Replace the current Cresna mark with a polished, image-based app logo and add a clearly labelled Shopify brand mark to the consent flow.
+- [x] Expand the Shopify connection consent experience with a plain-language data-sharing list, access purpose, exclusions, and revoke/disconnect explanation.
+- [x] Increase the paid AI-action capacity, make all plan limits explicit, and retain unrestricted owner access.
+- [x] Add a real beta-invitation email delivery path with a verified sender configuration, publish-ready link, delivery state, and safe failure handling.
+- [x] Configure a small-beta Gmail sender with an owner-authorized app password, transparent delivery state, and no credentials in source code.

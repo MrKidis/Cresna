@@ -21,10 +21,12 @@ import {
 } from "@/components/ui/sidebar";
 import { startLogin } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
+import { trpc } from "@/lib/trpc";
 import { Activity, ArrowUpRight, Crown, CreditCard, LayoutDashboard, Lightbulb, LogOut, PanelLeft, Settings, Sparkles, Store, WandSparkles } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
+import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "./ui/button";
 
 const menuItems = [
@@ -112,10 +114,15 @@ function DashboardLayoutContent({
   const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
+  const isUnpaidPreview = location === "/app/preview" || location.startsWith("/app/preview/");
+  const previewPath = (path: string) => path === "/app" ? "/app/preview" : `/app/preview${path.slice(4)}`;
+  const routedPath = (path: string) => isUnpaidPreview ? previewPath(path) : path;
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const activeMenuItem = menuItems.find(item => item.path === location);
   const isMobile = useIsMobile();
+  const { data: ownerAccess } = trpc.owner.access.useQuery(undefined, { enabled: Boolean(user) });
+  const isOwner = ownerAccess?.isOwner === true;
 
   useEffect(() => {
     if (isCollapsed) {
@@ -172,7 +179,7 @@ function DashboardLayoutContent({
               </button>
               {!isCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="grid h-7 w-7 place-items-center overflow-hidden rounded-[8px] bg-[#17201e]"><img src="/manus-storage/cresna-growth-signal-logo_a7907445.png" alt="" className="h-full w-full object-cover" /></span>
+                  <span className="grid h-7 w-7 place-items-center overflow-hidden rounded-[8px] bg-[#17201e]"><img src="/manus-storage/cresna-signal-mark_1d3ba7b0.png" alt="Cresna" className="h-full w-full object-contain p-0.5" /></span>
                   <span className="font-extrabold tracking-[-0.04em] truncate text-[#17201e]">cresna</span>
                 </div>
               ) : null}
@@ -182,12 +189,12 @@ function DashboardLayoutContent({
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-3 py-3">
               {menuItems.map(item => {
-                const isActive = location === item.path;
+                const isActive = location === routedPath(item.path);
                 return (
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
                       isActive={isActive}
-                      onClick={() => setLocation(item.path)}
+                      onClick={() => setLocation(routedPath(item.path))}
                       tooltip={item.label}
                       className={`h-11 rounded-xl px-3 transition-all font-semibold text-[13px] ${isActive ? "bg-[#fdfdfb] text-[#17201e] shadow-sm" : "text-[#58635e] hover:bg-[#fdfdfb]/70 hover:text-[#17201e]"}`}
                     >
@@ -200,6 +207,24 @@ function DashboardLayoutContent({
                 );
               })}
             </SidebarMenu>
+            {isOwner && !isUnpaidPreview ? <>
+              <div className="px-5 pt-4 group-data-[collapsible=icon]:hidden">
+                <p className="eyebrow text-[9px] font-medium text-[#7a847e]">Owner workspace</p>
+              </div>
+              <SidebarMenu className="px-3 py-2">
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    isActive={location === "/app/owner-panel" || location === "/app/founder"}
+                    onClick={() => setLocation("/app/owner-panel")}
+                    tooltip="Owner Panel"
+                    className={`h-11 rounded-xl px-3 transition-all font-semibold text-[13px] ${location === "/app/owner-panel" || location === "/app/founder" ? "bg-[#17201e] text-[#d9fa55] shadow-sm hover:bg-[#293630] hover:text-[#d9fa55]" : "text-[#58635e] hover:bg-[#fdfdfb]/70 hover:text-[#17201e]"}`}
+                  >
+                    <Crown className="h-4 w-4" />
+                    <span>Owner Panel</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </> : null}
             <div className="px-5 pt-5 group-data-[collapsible=icon]:hidden">
               <p className="eyebrow text-[9px] font-medium text-[#7a847e]">Account</p>
             </div>
@@ -207,13 +232,13 @@ function DashboardLayoutContent({
               {[
                 { icon: CreditCard, label: "Billing", path: "/app/billing" },
                 { icon: Sparkles, label: "Founding Beta", path: "/app/beta" },
-                ...(user?.role === "admin" ? [{ icon: Crown, label: "Founder Mode", path: "/app/founder" }] : []),
                 { icon: Settings, label: "Settings", path: "/app/settings" },
-              ].map(item => <SidebarMenuItem key={item.path}><SidebarMenuButton isActive={location === item.path} onClick={() => setLocation(item.path)} tooltip={item.label} className={`h-11 rounded-xl px-3 transition-all font-semibold text-[13px] ${location === item.path ? "bg-[#fdfdfb] text-[#17201e] shadow-sm" : "text-[#58635e] hover:bg-[#fdfdfb]/70 hover:text-[#17201e]"}`}><item.icon className="h-4 w-4" /><span>{item.label}</span></SidebarMenuButton></SidebarMenuItem>)}
+              ].map(item => <SidebarMenuItem key={item.path}><SidebarMenuButton isActive={location === routedPath(item.path)} onClick={() => setLocation(routedPath(item.path))} tooltip={item.label} className={`h-11 rounded-xl px-3 transition-all font-semibold text-[13px] ${location === routedPath(item.path) ? "bg-[#fdfdfb] text-[#17201e] shadow-sm" : "text-[#58635e] hover:bg-[#fdfdfb]/70 hover:text-[#17201e]"}`}><item.icon className="h-4 w-4" /><span>{item.label}</span></SidebarMenuButton></SidebarMenuItem>)}
             </SidebarMenu>
           </SidebarContent>
 
           <SidebarFooter className="m-3 rounded-xl border border-[#17201e]/10 bg-[#fdfdfb] p-2">
+            <div className="mb-2 flex justify-end px-1 group-data-[collapsible=icon]:justify-center"><ThemeToggle /></div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-3 rounded-lg px-1 py-1 hover:bg-accent/50 transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">

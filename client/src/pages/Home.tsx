@@ -1,5 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { startLogin } from "@/const";
 import { ArrowRight, Check, ChevronDown, CircleDot, Sparkles } from "lucide-react";
 import { useLocation } from "wouter";
@@ -9,13 +10,13 @@ const plans = [
     name: "Pro",
     price: "$19",
     description: "A focused growth loop for independent owners who need useful work, not another chatbot.",
-    features: ["Business Brain + transparent Growth Score", "Evidence-backed Opportunity Engine", "5 custom AI action drafts per month"],
+    features: ["Business Brain + transparent Growth Score", "Evidence-backed Opportunity Engine", "75 custom AI actions per month"],
   },
   {
     name: "Growth",
     price: "$49",
-    description: "Five times more custom-AI capacity for growing brands that turn opportunities into reviewed improvements each week.",
-    features: ["Everything in Pro", "25 custom AI action drafts per month", "Five times the monthly custom-AI capacity"],
+    description: "Four times more custom-AI capacity for growing brands that turn opportunities into reviewed improvements each week.",
+    features: ["Everything in Pro", "300 custom AI actions per month", "Four times the monthly custom-AI capacity"],
   },
 ];
 
@@ -26,18 +27,18 @@ export default function Home() {
   const signIn = () => startLogin();
 
   return (
-    <div id="top" className="min-h-screen overflow-hidden bg-[#f5f5f1] text-[#17201e]">
+    <div id="top" className="cresna-public-shell min-h-screen overflow-hidden bg-[#f5f5f1] text-[#17201e]">
       <header className="relative z-20 border-b border-[#17201e]/10 bg-[#f5f5f1]/90 backdrop-blur-md">
         <div className="container flex h-[72px] items-center justify-between">
           <button onClick={() => setLocation("/")} className="flex items-center gap-3 text-left" aria-label="Cresna home">
-                <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-[10px] bg-[#17201e]"><img src="/manus-storage/cresna-growth-signal-logo_a7907445.png" alt="" className="h-full w-full object-cover" /></span>
+                <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-[10px] bg-[#17201e]"><img src="/manus-storage/cresna-signal-mark_1d3ba7b0.png" alt="Cresna" className="h-full w-full object-contain p-0.5" /></span>
                 <span className="text-[15px] font-extrabold tracking-[-0.04em]">cresna</span>
           </button>
           <nav className="hidden items-center gap-8 text-[13px] font-semibold text-[#53605a] md:flex">
             <a className="transition-colors hover:text-[#17201e]" href="#method">Method</a>
             <a className="transition-colors hover:text-[#17201e]" href="#pricing">Pricing</a>
           </nav>
-          <div className="flex items-center gap-2">{!user ? <button type="button" onClick={signIn} className="hidden px-3 py-2 text-xs font-bold text-[#53605a] hover:text-[#17201e] sm:inline-flex">Sign in</button> : null}<Button onClick={goToWorkspace} className="h-10 rounded-full bg-[#17201e] px-5 text-xs font-bold text-[#f8f7f2] shadow-none hover:bg-[#293630]">
+          <div className="flex items-center gap-2"><ThemeToggle className="hidden sm:inline-flex" />{!user ? <button type="button" onClick={signIn} className="hidden px-3 py-2 text-xs font-bold text-[#53605a] hover:text-[#17201e] sm:inline-flex">Sign in</button> : null}<Button onClick={goToWorkspace} className="h-10 rounded-full bg-[#17201e] px-5 text-xs font-bold text-[#f8f7f2] shadow-none hover:bg-[#293630]">
             {user ? "Open workspace" : "Start free trial"}<ArrowRight className="ml-2 h-3.5 w-3.5" />
           </Button></div>
         </div>

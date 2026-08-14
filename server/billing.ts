@@ -1,9 +1,54 @@
 import Stripe from "stripe";
-import { getBetaInviteForUser, getWorkspaceProfile, updateStripeReferences } from "./db";
+import { getBetaInviteForUser, getWorkspaceProfile, listStripeCustomerReferences, updateStripeReferences } from "./db";
 import { ENV } from "./_core/env";
+import { isPermanentOwner } from "./accessRules";
 import { BillingInterval, SubscriptionPlanKey, subscriptionPlans } from "./products";
 
 const stripe = new Stripe(ENV.stripeSecretKey || "sk_missing");
+
+export function getUnpaidPreviewAccess() {
+  return {
+    hasAccess: false,
+    accessSource: "none" as const,
+    subscription: null,
+    plan: null,
+    status: null,
+    interval: null,
+    currentPeriodEnd: null,
+    previewMode: "unpaid" as const,
+  };
+}
+
+type CurrentSubscription = { status: "active" | "trialing"; plan: string | null };
+
+export function summarizeCurrentSubscriptions(subscriptions: CurrentSubscription[]) {
+  return subscriptions.reduce((summary, subscription) => {
+    if (subscription.status === "trialing") summary.trialingWorkspaces += 1;
+    if (subscription.status === "active") summary.activeSubscriptions += 1;
+    if (subscription.plan === "pro") summary.proSubscriptions += 1;
+    if (subscription.plan === "growth") summary.growthSubscriptions += 1;
+    if (!subscription.plan || (subscription.plan !== "pro" && subscription.plan !== "growth")) summary.unmappedSubscriptions += 1;
+    return summary;
+  }, { activeSubscriptions: 0, trialingWorkspaces: 0, proSubscriptions: 0, growthSubscriptions: 0, unmappedSubscriptions: 0 });
+}
+
+export async function getPlatformBillingSummary() {
+  if (!ENV.stripeSecretKey) {
+    return { isConfigured: false, activeSubscriptions: 0, trialingWorkspaces: 0, proSubscriptions: 0, growthSubscriptions: 0, unmappedSubscriptions: 0, syncError: null as string | null };
+  }
+  try {
+    const customers = await listStripeCustomerReferences();
+    const current = await Promise.all(customers.map(async ({ stripeCustomerId }) => {
+      const subscriptions = await stripe.subscriptions.list({ customer: stripeCustomerId, status: "all", limit: 20 });
+      const active = subscriptions.data.find(item => item.status === "active" || item.status === "trialing");
+      return active ? { status: active.status, plan: active.metadata.plan || null } as CurrentSubscription : null;
+    }));
+    return { isConfigured: true, ...summarizeCurrentSubscriptions(current.filter((item): item is CurrentSubscription => item !== null)), syncError: null as string | null };
+  } catch (error) {
+    console.error("[Billing] Unable to load aggregate subscription summary", error);
+    return { isConfigured: true, activeSubscriptions: 0, trialingWorkspaces: 0, proSubscriptions: 0, growthSubscriptions: 0, unmappedSubscriptions: 0, syncError: "Cresna could not refresh Stripe aggregates right now." };
+  }
+}
 
 function assertStripeConfigured() {
   if (!ENV.stripeSecretKey) throw new Error("Stripe is not configured");
@@ -69,7 +114,7 @@ export async function createBillingPortal(userId: number, origin: string) {
 export async function getBillingAccess(userId: number) {
   const user = await getWorkspaceProfile(userId);
   if (!user) return { hasAccess: false, accessSource: "none" as const, subscription: null, plan: null, status: null, interval: null, currentPeriodEnd: null };
-  if (user.role === "admin") return { hasAccess: true, accessSource: "owner" as const, subscription: null, plan: "Founder Mode", status: "owner", interval: null, currentPeriodEnd: null };
+  if (isPermanentOwner(user.openId, ENV.ownerOpenId)) return { hasAccess: true, accessSource: "owner" as const, subscription: null, plan: "Growth", status: "owner", interval: null, currentPeriodEnd: null };
   const betaInvite = await getBetaInviteForUser(userId);
   if (betaInvite?.status === "active" && betaInvite.expiresAt && betaInvite.expiresAt > new Date()) return { hasAccess: true, accessSource: "beta" as const, subscription: null, plan: "Founding Beta", status: "active", interval: null, currentPeriodEnd: betaInvite.expiresAt };
   if (!user.stripeCustomerId || !ENV.stripeSecretKey) return { hasAccess: false, accessSource: "none" as const, subscription: null, plan: null, status: null, interval: null, currentPeriodEnd: null };

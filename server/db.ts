@@ -18,6 +18,7 @@ import {
   users,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
+import { isPermanentOwner } from "./accessRules";
 import { BetaFeedbackInput, toBetaFeedbackPersistenceValues } from "./betaFeedback";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -69,12 +70,12 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values.lastSignedIn = user.lastSignedIn;
       updateSet.lastSignedIn = user.lastSignedIn;
     }
-    if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
+    if (isPermanentOwner(user.openId, ENV.ownerOpenId)) {
       values.role = 'admin';
       updateSet.role = 'admin';
+    } else if (user.role !== undefined) {
+      values.role = user.role === "admin" ? "user" : user.role;
+      updateSet.role = values.role;
     }
 
     if (!values.lastSignedIn) {
@@ -202,9 +203,20 @@ export async function createFoundingBetaInvite(ownerUserId: number, email: strin
   if (!db) throw new Error("Database unavailable");
   const normalizedEmail = email.trim().toLowerCase();
   await db.insert(foundingBetaInvites).values({ email: normalizedEmail, invitedByUserId: ownerUserId }).onDuplicateKeyUpdate({
-    set: { status: "invited", activatedUserId: null, activatedAt: null, expiresAt: null },
+    set: { status: "invited", activatedUserId: null, activatedAt: null, expiresAt: null, deliveryStatus: "pending", deliveryMessageId: null, deliveryError: null, deliveredAt: null },
   });
   return (await db.select().from(foundingBetaInvites).where(eq(foundingBetaInvites.email, normalizedEmail)).limit(1))[0];
+}
+
+export async function setFoundingBetaInviteDelivery(input: { inviteId: number; status: "sent" | "failed" | "unconfigured"; messageId?: string | null; error?: string | null }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.update(foundingBetaInvites).set({
+    deliveryStatus: input.status,
+    deliveryMessageId: input.messageId || null,
+    deliveryError: input.error || null,
+    deliveredAt: input.status === "sent" ? new Date() : null,
+  }).where(eq(foundingBetaInvites.id, input.inviteId));
 }
 
 export async function listFoundingBetaInvites() {
@@ -261,19 +273,83 @@ export async function getBetaFeedbackForUser(userId: number) {
 export async function getOwnerOverview() {
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
-  const [allUsers, allStores, invites, feedback] = await Promise.all([
+  const [allUsers, allStores, invites, feedback, allRecommendations, allDrafts, outcomeActions, stripeAccounts] = await Promise.all([
     db.select({ id: users.id }).from(users),
     db.select({ id: stores.id, connectionStatus: stores.connectionStatus }).from(stores),
     db.select().from(foundingBetaInvites).orderBy(desc(foundingBetaInvites.createdAt)),
     db.select().from(betaFeedback).orderBy(desc(betaFeedback.createdAt)),
+    db.select({ id: recommendations.id, status: recommendations.status }).from(recommendations),
+    db.select({ id: aiActionDrafts.id, status: aiActionDrafts.status }).from(aiActionDrafts),
+    db.select({ id: recommendationActions.id, measurementStatus: recommendationActions.measurementStatus, revenueChange: recommendationActions.revenueChange }).from(recommendationActions),
+    db.select({ id: billingAccounts.id }).from(billingAccounts),
   ]);
   const betaInvites = await Promise.all(invites.map(async invite => ({ ...invite, featureOverrides: await getBetaFeatureOverrides(invite.id) })));
+  const ratedFeedback = feedback.filter(item => item.growthProfileRating !== null);
+  const betaFeedbackSummary = {
+    totalSubmissions: feedback.length,
+    ratingCount: ratedFeedback.length,
+    averageGrowthProfileRating: ratedFeedback.length ? Math.round((ratedFeedback.reduce((sum, item) => sum + Number(item.growthProfileRating), 0) / ratedFeedback.length) * 10) / 10 : null,
+    writtenResponseCount: feedback.filter(item => Boolean(item.feedbackText?.trim())).length,
+    checkpoints: feedback.reduce<Record<string, number>>((counts, item) => { counts[item.checkpoint] = (counts[item.checkpoint] || 0) + 1; return counts; }, {}),
+    willingnessToPay: feedback.reduce<Record<string, number>>((counts, item) => { if (item.willingnessToPay) counts[item.willingnessToPay] = (counts[item.willingnessToPay] || 0) + 1; return counts; }, {}),
+  };
   return {
     totalUsers: allUsers.length,
     connectedStores: allStores.filter(store => store.connectionStatus === "connected").length,
+    stripeLinkedWorkspaces: stripeAccounts.length,
+    recommendationsGenerated: allRecommendations.length,
+    recommendationsCompleted: allRecommendations.filter(recommendation => recommendation.status === "completed").length,
+    aiDraftsGenerated: allDrafts.length,
+    aiDraftsApproved: allDrafts.filter(draft => draft.status === "approved").length,
+    outcomesMeasured: outcomeActions.filter(action => action.measurementStatus === "measured").length,
+    positiveOutcomes: outcomeActions.filter(action => action.measurementStatus === "measured" && Number(action.revenueChange ?? 0) > 0).length,
     betaInvites,
     betaFeedback: feedback,
+    betaFeedbackSummary,
   };
+}
+
+export async function listStripeCustomerReferences() {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const rows = await db.select({ userId: users.id, stripeCustomerId: users.stripeCustomerId }).from(users);
+  return rows.filter((row): row is { userId: number; stripeCustomerId: string } => Boolean(row.stripeCustomerId));
+}
+
+/**
+ * Cross-workspace outcome patterns are deliberately aggregated by recommendation
+ * category. Samples below the threshold are discarded so no merchant-level
+ * result can be reconstructed or over-interpreted.
+ */
+export async function getAggregateOutcomeLearningSignals(minimumMeasuredSamples = 5) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const rows = await db
+    .select({
+      category: recommendations.category,
+      measurementStatus: recommendationActions.measurementStatus,
+      revenueChange: recommendationActions.revenueChange,
+    })
+    .from(recommendationActions)
+    .innerJoin(recommendations, eq(recommendationActions.recommendationId, recommendations.id));
+
+  const grouped = new Map<string, number[]>();
+  for (const row of rows) {
+    if (row.measurementStatus !== "measured" || row.revenueChange === null) continue;
+    const results = grouped.get(row.category) || [];
+    results.push(Number(row.revenueChange));
+    grouped.set(row.category, results);
+  }
+
+  return Array.from(grouped.entries())
+    .filter(([, revenueChanges]) => revenueChanges.length >= minimumMeasuredSamples)
+    .map(([category, revenueChanges]) => ({
+      category,
+      measuredSampleCount: revenueChanges.length,
+      positiveOutcomeRate: Math.round((revenueChanges.filter(change => change > 0).length / revenueChanges.length) * 100),
+      averageRevenueChange: Math.round(revenueChanges.reduce((sum, change) => sum + change, 0) / revenueChanges.length),
+    }))
+    .sort((left, right) => right.measuredSampleCount - left.measuredSampleCount || right.positiveOutcomeRate - left.positiveOutcomeRate);
 }
 
 export async function getPrimaryStoreForUser(userId: number) {

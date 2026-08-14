@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { businessBrainEvents, recommendationActions, recommendations, storeDailyMetrics } from "../drizzle/schema";
-import { getAnalyticsOverview, getCatalogProductsForUser, getDb } from "./db";
+import { getAggregateOutcomeLearningSignals, getAnalyticsOverview, getCatalogProductsForUser, getDb } from "./db";
 import { invokeLLM } from "./_core/llm";
 
 type Candidate = {
@@ -78,12 +78,13 @@ export async function generateRecommendationsForUser(userId: number) {
   const catalog = await getCatalogProductsForUser(userId);
   const candidates = rankCandidates([...buildCandidates(overview), ...buildCatalogCandidates(catalog)]).slice(0, 12);
   if (!candidates.length) return { generated: 0, reason: "Cresna needs active catalog records or at least seven reporting days before it can identify a verified opportunity." };
+  const aggregateOutcomeSignals = await getAggregateOutcomeLearningSignals();
   const result = await invokeLLM({
     model: "gpt-5-mini",
     max_tokens: 2200,
     messages: [
-      { role: "system", content: "You are Cresna's ecommerce analyst. Use only the supplied evidence. Do not invent metrics, products, causes, or outcomes. Recommendations must be cautious estimates, should not recommend a discount unless the evidence explicitly supports it, and must give a concrete seller action. If a candidate has impactKnown=false, estimatedImpactLow and estimatedImpactHigh must both be zero and the rationale must say that revenue impact needs more store history. Return JSON only." },
-      { role: "user", content: JSON.stringify({ currency: overview.store.currency, reportingDays: overview.dailyMetrics.length, candidates }) },
+      { role: "system", content: "You are Cresna's ecommerce analyst. Use only the supplied merchant evidence. Do not invent metrics, products, causes, or outcomes. Recommendations must be cautious estimates, should not recommend a discount unless the evidence explicitly supports it, and must give a concrete seller action. The aggregate outcome-learning signals are privacy-preserving category-level context from other measured actions. They may help you prioritize among already-supported candidates, but never replace this merchant's evidence, appear as this merchant's evidence, or justify an impact estimate. If a candidate has impactKnown=false, estimatedImpactLow and estimatedImpactHigh must both be zero and the rationale must say that revenue impact needs more store history. Return JSON only." },
+      { role: "user", content: JSON.stringify({ currency: overview.store.currency, reportingDays: overview.dailyMetrics.length, candidates, aggregateOutcomeSignals, outcomeLearningAvailable: aggregateOutcomeSignals.length > 0 }) },
     ],
     response_format: {
       type: "json_schema",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCheckoutSessionConfig } from "./billing";
+import { buildCheckoutSessionConfig, getUnpaidPreviewAccess, summarizeCurrentSubscriptions } from "./billing";
 
 describe("Stripe Checkout configuration", () => {
   it("creates a subscription Checkout configuration with Cresna metadata and a fourteen-day trial", () => {
@@ -15,5 +15,17 @@ describe("Stripe Checkout configuration", () => {
       cancel_url: "https://cresna.example/app/billing?checkout=canceled",
     });
     expect(config.line_items).toEqual([{ price: "price_123", quantity: 1 }]);
+  });
+
+  it("counts only current trial and paid subscription records for owner aggregates", () => {
+    expect(summarizeCurrentSubscriptions([
+      { status: "trialing", plan: "pro" },
+      { status: "active", plan: "growth" },
+      { status: "active", plan: null },
+    ])).toEqual({ activeSubscriptions: 2, trialingWorkspaces: 1, proSubscriptions: 1, growthSubscriptions: 1, unmappedSubscriptions: 1 });
+  });
+
+  it("exposes a server-authored no-access contract for the unpaid workspace preview", () => {
+    expect(getUnpaidPreviewAccess()).toMatchObject({ hasAccess: false, accessSource: "none", previewMode: "unpaid", subscription: null });
   });
 });

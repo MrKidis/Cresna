@@ -4,16 +4,19 @@ import Actions from "@/pages/Actions";
 import AIStudio from "@/pages/AIStudio";
 import Billing from "@/pages/Billing";
 import ConnectStore from "@/pages/ConnectStore";
+import ConnectStoreConsent from "@/pages/ConnectStoreConsent";
 import Dashboard from "@/pages/Dashboard";
 import FoundingBeta from "@/pages/FoundingBeta";
-import FounderConsole from "@/pages/FounderConsole";
+import OwnerPanel from "@/pages/OwnerPanel";
 import GrowthProfile from "@/pages/GrowthProfile";
 import Impact from "@/pages/Impact";
 import NotFound from "@/pages/NotFound";
 import Settings from "@/pages/Settings";
+import UnpaidPreview from "@/pages/UnpaidPreview";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import { UnpaidPreviewProvider } from "./contexts/UnpaidPreviewContext";
 import Home from "./pages/Home";
 
 function Router() {
@@ -23,13 +26,24 @@ function Router() {
       <Route path={"/"} component={Home} />
       <Route path={"/app"} component={Dashboard} />
       <Route path={"/app/profile"} component={GrowthProfile} />
-      <Route path={"/app/founder"} component={FounderConsole} />
+      <Route path={"/app/owner-panel"} component={OwnerPanel} />
+      <Route path={"/app/founder"} component={OwnerPanel} />
       <Route path={"/app/beta"} component={FoundingBeta} />
-      <Route path={"/app/connect"} component={ConnectStore} />
+      <Route path={"/app/connect"} component={ConnectStoreConsent} />
       <Route path={"/app/actions"} component={Actions} />
       <Route path={"/app/ai-studio"} component={AIStudio} />
       <Route path={"/app/impact"} component={Impact} />
       <Route path={"/app/billing"} component={Billing} />
+      <Route path={"/app/preview"} component={UnpaidPreview} />
+      <Route path={"/app/unpaid-preview"} component={UnpaidPreview} />
+      <Route path={"/app/preview/profile"} component={PreviewGrowthProfile} />
+      <Route path={"/app/preview/connect"} component={PreviewConnectStore} />
+      <Route path={"/app/preview/actions"} component={PreviewActions} />
+      <Route path={"/app/preview/ai-studio"} component={PreviewAIStudio} />
+      <Route path={"/app/preview/impact"} component={PreviewImpact} />
+      <Route path={"/app/preview/billing"} component={PreviewBilling} />
+      <Route path={"/app/preview/beta"} component={PreviewFoundingBeta} />
+      <Route path={"/app/preview/settings"} component={PreviewSettings} />
       <Route path={"/app/settings"} component={Settings} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
@@ -43,12 +57,27 @@ function Router() {
 //   to keep consistent foreground/background color across components
 // - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
 
+function withUnpaidPreview(Page: React.ComponentType) {
+  return function UnpaidPreviewRoute() {
+    return <UnpaidPreviewProvider><Page /></UnpaidPreviewProvider>;
+  };
+}
+
+const PreviewGrowthProfile = withUnpaidPreview(GrowthProfile);
+const PreviewConnectStore = withUnpaidPreview(ConnectStoreConsent);
+const PreviewActions = withUnpaidPreview(Actions);
+const PreviewAIStudio = withUnpaidPreview(AIStudio);
+const PreviewImpact = withUnpaidPreview(Impact);
+const PreviewBilling = withUnpaidPreview(Billing);
+const PreviewFoundingBeta = withUnpaidPreview(FoundingBeta);
+const PreviewSettings = withUnpaidPreview(Settings);
+
 function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider
         defaultTheme="light"
-        // switchable
+        switchable
       >
         <TooltipProvider>
           <Toaster />
