@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isPermanentOwner, permitsBetaFeature } from "./accessRules";
+import { isClosedBetaAdmitted, isPermanentOwner, permitsBetaFeature } from "./accessRules";
 
 describe("beta feature access", () => {
   it("keeps paid and owner access independent from beta feature flags", () => {
@@ -18,5 +18,12 @@ describe("beta feature access", () => {
     expect(isPermanentOwner("other-open-id", "owner-open-id")).toBe(false);
     expect(isPermanentOwner(undefined, "owner-open-id")).toBe(false);
     expect(isPermanentOwner("owner-open-id", "")).toBe(false);
+  });
+
+  it("admits only the permanent owner and active invited beta workspaces during closed beta", () => {
+    expect(isClosedBetaAdmitted("owner")).toBe(true);
+    expect(isClosedBetaAdmitted("beta")).toBe(true);
+    expect(isClosedBetaAdmitted("stripe")).toBe(false);
+    expect(isClosedBetaAdmitted("none")).toBe(false);
   });
 });

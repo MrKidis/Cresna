@@ -22,20 +22,18 @@ import {
 import { startLogin } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
 import { trpc } from "@/lib/trpc";
-import { Activity, ArrowUpRight, Crown, CreditCard, LayoutDashboard, Lightbulb, LogOut, PanelLeft, Settings, Sparkles, Store, WandSparkles } from "lucide-react";
+import { Activity, ArrowUpRight, Crown, CreditCard, FileText, Globe2, Landmark, LayoutDashboard, Lightbulb, LogOut, Package, PanelLeft, Receipt, Settings, ShoppingCart, Sparkles, Store, Tag, Truck, UsersRound, WandSparkles } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
-import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
+import { DashboardLayoutSkeleton } from "./DashboardLayoutSkeleton";
+import { OnboardingTutorial } from "./OnboardingTutorial";
 import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "./ui/button";
 
-const menuItems = [
-  { icon: LayoutDashboard, label: "Overview", path: "/app" },
-  { icon: Sparkles, label: "Growth Profile", path: "/app/profile" },
-  { icon: Store, label: "Connect store", path: "/app/connect" },
-  { icon: Lightbulb, label: "Action feed", path: "/app/actions" },
-  { icon: WandSparkles, label: "AI Action Studio", path: "/app/ai-studio" },
-  { icon: Activity, label: "Impact tracker", path: "/app/impact" },
+const menuGroups = [
+  { label: "Workspace", items: [{ icon: LayoutDashboard, label: "Overview", path: "/app" }, { icon: Sparkles, label: "Growth Profile", path: "/app/profile" }, { icon: Store, label: "Connect store", path: "/app/connect" }] },
+  { label: "Commerce", items: [{ icon: ShoppingCart, label: "Orders", path: "/app/orders" }, { icon: FileText, label: "Drafts", path: "/app/drafts" }, { icon: Truck, label: "Shipping labels", path: "/app/shipping" }, { icon: Package, label: "Products", path: "/app/products" }, { icon: UsersRound, label: "Customers", path: "/app/customers" }, { icon: Tag, label: "Discounts", path: "/app/discounts" }, { icon: FileText, label: "Content", path: "/app/content" }, { icon: Globe2, label: "Markets", path: "/app/markets" }, { icon: Landmark, label: "Finance", path: "/app/finance" }, { icon: Activity, label: "Analytics", path: "/app/analytics" }] },
+  { label: "Growth actions", items: [{ icon: Lightbulb, label: "Opportunity Engine", path: "/app/actions" }, { icon: WandSparkles, label: "AI Action Studio", path: "/app/ai-studio" }, { icon: Activity, label: "Impact tracker", path: "/app/impact" }, { icon: Receipt, label: "Growth loop", path: "/app/growth" }] },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -97,6 +95,7 @@ export default function DashboardLayout({
       <DashboardLayoutContent setSidebarWidth={setSidebarWidth}>
         {children}
       </DashboardLayoutContent>
+      <OnboardingTutorial />
     </SidebarProvider>
   );
 }
@@ -119,7 +118,7 @@ function DashboardLayoutContent({
   const routedPath = (path: string) => isUnpaidPreview ? previewPath(path) : path;
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const activeMenuItem = menuItems.find(item => item.path === location);
+  const activeMenuItem = menuGroups.flatMap(group => group.items).find(item => item.path === location);
   const isMobile = useIsMobile();
   const { data: ownerAccess } = trpc.owner.access.useQuery(undefined, { enabled: Boolean(user) });
   const isOwner = ownerAccess?.isOwner === true;
@@ -187,26 +186,7 @@ function DashboardLayoutContent({
           </SidebarHeader>
 
           <SidebarContent className="gap-0">
-            <SidebarMenu className="px-3 py-3">
-              {menuItems.map(item => {
-                const isActive = location === routedPath(item.path);
-                return (
-                  <SidebarMenuItem key={item.path}>
-                    <SidebarMenuButton
-                      isActive={isActive}
-                      onClick={() => setLocation(routedPath(item.path))}
-                      tooltip={item.label}
-                      className={`h-11 rounded-xl px-3 transition-all font-semibold text-[13px] ${isActive ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm" : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}
-                    >
-                      <item.icon
-                        className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
-                      />
-                      <span>{item.label}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
+            {menuGroups.map((group, groupIndex) => <div key={group.label} className={groupIndex ? "pt-3" : ""}><div className="px-5 pb-1 group-data-[collapsible=icon]:hidden"><p className="eyebrow text-[9px] font-medium text-[#7a847e]">{group.label}</p></div><SidebarMenu className="px-3 py-1">{group.items.map(item => { const isActive = location === routedPath(item.path); return <SidebarMenuItem key={item.path}><SidebarMenuButton isActive={isActive} onClick={() => setLocation(routedPath(item.path))} tooltip={item.label} className={`h-10 rounded-xl px-3 transition-all font-semibold text-[13px] ${isActive ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm" : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}><item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} /><span>{item.label}</span></SidebarMenuButton></SidebarMenuItem>; })}</SidebarMenu></div>)}
             {isOwner && !isUnpaidPreview ? <>
               <div className="px-5 pt-4 group-data-[collapsible=icon]:hidden">
                 <p className="eyebrow text-[9px] font-medium text-[#7a847e]">Owner workspace</p>

@@ -25,6 +25,7 @@ export default function OwnerPanel() {
   const utils = trpc.useUtils();
   const [email, setEmail] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const accessRequests = trpc.founder.accessRequests.useQuery(undefined, { enabled: Boolean(data) });
 
   const invite = trpc.founder.inviteBeta.useMutation({
     onSuccess: result => {
@@ -42,6 +43,16 @@ export default function OwnerPanel() {
   });
   const assistant = trpc.founder.askAssistant.useMutation({
     onSuccess: ({ answer }) => setMessages(previous => [...previous, { role: "assistant", content: answer }]),
+    onError: mutationError => toast.error(mutationError.message),
+  });
+  const inviteAccessRequest = trpc.founder.inviteAccessRequest.useMutation({
+    onSuccess: result => {
+      utils.founder.accessRequests.invalidate();
+      utils.founder.overview.invalidate();
+      if (result.deliveryStatus === "sent") toast.success("Beta invitation sent from Gmail");
+      else if (result.deliveryStatus === "unconfigured") toast.message("Invitation created; Gmail sender still needs setup");
+      else toast.error("Invitation was created, but Gmail could not send it");
+    },
     onError: mutationError => toast.error(mutationError.message),
   });
 
@@ -112,12 +123,16 @@ export default function OwnerPanel() {
           <ShieldCheck className="h-5 w-5 text-[#d9fa55]" />
           <p className="eyebrow mt-7 text-[10px] text-[#b6c1bb]">Founding Beta</p>
           <h2 className="mt-3 text-2xl font-extrabold tracking-[-0.05em]">Invite a test partner.</h2>
-          <p className="mt-3 text-sm leading-6 text-[#d9e1dc]">Each accepted invitation activates seven days of full access. Cresna never generates testimonials or reviews from beta feedback. Invitations send from the owner’s configured Gmail address and are not treated as delivered until Gmail reports success.</p>
+          <p className="mt-3 text-sm leading-6 text-[#d9e1dc]">Each accepted invitation activates one-time, two-day beta access after that exact email signs in. Cresna never generates testimonials or reviews from beta feedback. Invitations send from the owner’s configured Gmail address and are not treated as delivered until Gmail reports success.</p>
           <form className="mt-6 space-y-3" onSubmit={event => { event.preventDefault(); invite.mutate({ email }); }}>
             <label className="sr-only" htmlFor="owner-beta-email">Beta tester email</label>
             <Input id="owner-beta-email" type="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="tester@brand.com" className="h-11 border-white/15 bg-white/10 text-white placeholder:text-[#b6c1bb] focus-visible:ring-accent" />
-            <Button type="submit" disabled={invite.isPending} className="h-11 w-full rounded-full bg-accent text-accent-foreground hover:bg-accent/90">{invite.isPending ? "Creating invitation…" : "Create 7-day beta invitation"}</Button>
+            <Button type="submit" disabled={invite.isPending} className="h-11 w-full rounded-full bg-accent text-accent-foreground hover:bg-accent/90">{invite.isPending ? "Creating invitation…" : "Create 2-day beta invitation"}</Button>
           </form>
+          <div className="mt-7 border-t border-white/10 pt-5">
+            <div className="flex items-center justify-between gap-3"><div><p className="eyebrow text-[10px] text-[#b6c1bb]">Access requests</p><p className="mt-1 text-xs leading-5 text-[#d9e1dc]">Requests never grant access until you choose to invite the exact email.</p></div><span className="rounded-full bg-white/10 px-2.5 py-1 text-[10px] font-bold text-[#f8f7f2]">{accessRequests.data?.filter(request => request.status === "requested").length || 0} waiting</span></div>
+            {accessRequests.isLoading ? <p className="mt-4 text-xs text-[#b6c1bb]">Loading requests…</p> : !accessRequests.data?.length ? <p className="mt-4 text-xs leading-5 text-[#b6c1bb]">No beta access requests yet.</p> : <div className="mt-4 space-y-3">{accessRequests.data.slice(0, 4).map(request => <article key={request.id} className="rounded-xl border border-white/10 bg-white/5 p-3"><div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><p className="truncate text-xs font-bold text-white">{request.email}</p>{request.storeUrl ? <p className="mt-1 truncate text-[11px] text-[#b6c1bb]">{request.storeUrl}</p> : null}</div><span className="rounded-full bg-white/10 px-2 py-1 text-[9px] font-bold text-[#d9e1dc]">{request.status}</span></div>{request.note ? <p className="mt-2 text-[11px] leading-5 text-[#d9e1dc]">{request.note}</p> : null}{request.status === "requested" ? <Button type="button" size="sm" disabled={inviteAccessRequest.isPending} onClick={() => inviteAccessRequest.mutate({ requestId: request.id })} className="mt-3 h-8 rounded-full bg-accent px-3 text-[10px] font-bold text-accent-foreground hover:bg-accent/90">{inviteAccessRequest.isPending ? "Sending…" : "Approve & email invite"}</Button> : <p className="mt-3 text-[10px] text-[#b6c1bb]">Invitation action recorded. The exact email must sign in to activate its one-time two-day beta period.</p>}</article>)}</div>}
+          </div>
         </section>
 
         <section className="rounded-[1.35rem] border border-[#17201e]/12 bg-[#fdfdfb] p-6">

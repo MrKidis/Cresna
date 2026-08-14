@@ -87,6 +87,39 @@ export const foundingBetaInvites = mysqlTable(
   table => [index("founding_beta_invites_status_idx").on(table.status)]
 );
 
+/** Public beta access requests never grant product access by themselves. The configured owner reviews each request and can send a separate invitation. */
+export const betaAccessRequests = mysqlTable(
+  "betaAccessRequests",
+  {
+    id: bigint("id", { mode: "number" }).autoincrement().primaryKey(),
+    email: varchar("email", { length: 320 }).notNull().unique(),
+    storeUrl: varchar("storeUrl", { length: 255 }),
+    note: text("note"),
+    status: mysqlEnum("status", ["requested", "invited", "declined"]).default("requested").notNull(),
+    invitedByUserId: int("invitedByUserId").references(() => users.id, { onDelete: "set null" }),
+    invitedAt: timestamp("invitedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [index("beta_access_requests_status_idx").on(table.status)]
+);
+
+/** One onboarding record per merchant workspace prevents completed or dismissed guidance from reappearing automatically. */
+export const userOnboarding = mysqlTable(
+  "userOnboarding",
+  {
+    id: bigint("id", { mode: "number" }).autoincrement().primaryKey(),
+    userId: int("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    status: mysqlEnum("status", ["not_started", "completed", "dismissed"]).default("not_started").notNull(),
+    completedAt: timestamp("completedAt"),
+    dismissedAt: timestamp("dismissedAt"),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [uniqueIndex("user_onboarding_user_unique").on(table.userId)]
+);
+
 /** The owner can enable narrowly scoped experimental capabilities per beta workspace. */
 export const betaFeatureOverrides = mysqlTable(
   "betaFeatureOverrides",

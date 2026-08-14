@@ -91,8 +91,6 @@ export function buildCheckoutSessionConfig(input: {
     payment_method_collection: "always" as const,
     allow_promotion_codes: true,
     subscription_data: {
-      trial_period_days: subscriptionPlans[input.planKey].trialDays,
-      trial_settings: { end_behavior: { missing_payment_method: "cancel" as const } },
       metadata: { user_id: String(input.user.id), plan: input.planKey },
     },
     metadata: { user_id: String(input.user.id), customer_email: input.user.email || "", customer_name: input.user.name || "", plan: input.planKey },
@@ -128,12 +126,12 @@ export async function getBillingAccess(userId: number) {
   if (isPermanentOwner(user.openId, ENV.ownerOpenId)) return { hasAccess: true, accessSource: "owner" as const, subscription: null, plan: "Growth", status: "owner", interval: null, currentPeriodEnd: null };
   const betaInvite = await getBetaInviteForUser(userId);
   if (betaInvite?.status === "active" && betaInvite.expiresAt && betaInvite.expiresAt > new Date()) return { hasAccess: true, accessSource: "beta" as const, subscription: null, plan: "Founding Beta", status: "active", interval: null, currentPeriodEnd: betaInvite.expiresAt };
-  if (!user.stripeCustomerId || !ENV.stripeSecretKey) return { hasAccess: false, accessSource: "none" as const, subscription: null, plan: null, status: null, interval: null, currentPeriodEnd: null };
+  if (!user.stripeCustomerId || !ENV.stripeSecretKey) return { hasAccess: true, accessSource: "free" as const, subscription: null, plan: "Free", status: "active", interval: null, currentPeriodEnd: null };
   const subscriptions = await stripe.subscriptions.list({ customer: user.stripeCustomerId, status: "all", limit: 20 });
   const subscription = subscriptions.data.find(item => hasLiveStripeAccess(item)) ?? null;
   const recurring = subscription?.items.data[0]?.price.recurring;
   const periodEnd = subscription?.items.data[0]?.current_period_end;
-  return { hasAccess: Boolean(subscription), accessSource: subscription ? "stripe" as const : "none" as const, subscription, plan: subscription?.metadata.plan || null, status: subscription?.status || null, interval: recurring?.interval || null, currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null };
+  return subscription ? { hasAccess: true, accessSource: "stripe" as const, subscription, plan: subscription.metadata.plan || null, status: subscription.status, interval: recurring?.interval || null, currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null } : { hasAccess: true, accessSource: "free" as const, subscription: null, plan: "Free", status: "active", interval: null, currentPeriodEnd: null };
 }
 
 export async function handleStripeEvent(event: Stripe.Event) {

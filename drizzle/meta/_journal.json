@@ -71,6 +71,20 @@
       "when": 1786721139522,
       "tag": "0009_late_quicksilver",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "5",
+      "when": 1786726425947,
+      "tag": "0010_mature_nehzno",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1786727074681,
+      "tag": "0011_rainy_boom_boom",
+      "breakpoints": true
     }
   ]
 }

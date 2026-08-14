@@ -48,7 +48,7 @@
 - [x] Add a deterministic server-side contract test for linked draft metadata, supported recommendation categories, and recommendation ID propagation.
 - [x] Bind permanent founder access to the configured owner identity, independent of mutable UI roles, and prevent access to owner-only data for all other users.
 - [x] Move founder controls into a separate Owner Panel and add aggregate, privacy-preserving owner intelligence for users, store connections, subscriptions, trials, and beta feedback.
-- [ ] Add a normal unpaid-user preview that shows the true no-subscription state without fabricating user or store data.
+- [x] Add a normal unpaid-user preview that shows the true no-subscription state without fabricating user or store data.
 - [ ] Add dark mode, theme persistence, and premium visual refinement across the public site and workspace.
 - [x] Fix the owner-only assistant so incomplete provider responses produce a safe, useful aggregate-data fallback instead of a mutation error.
 - [x] Replace the current Cresna mark with a polished, image-based app logo and add a clearly labelled Shopify brand mark to the consent flow.
@@ -64,9 +64,19 @@
 - [ ] Validate Shopify authorization URLs, callback handling, scopes, and disconnected-store error paths against the configured live integration contract.
 - [ ] Improve both Cresna AI experiences with fast, evidence-bound store intelligence, honest estimated-impact guidance, and clear missing-data limits without claiming unsupported capabilities.
 - [x] Align plan comparison and gating with actual premium capabilities, including Stripe-ready trial/cancellation behavior and documented future RevenueCat integration boundaries.
-- [ ] Replace remaining dark-mode white-on-light and low-contrast surfaces with accessible semantic components and verify the main live workspace in both themes.
-- [x] Ensure the live app never substitutes the owner identity for a new user and that normal users receive only their intended trial or invitation-based access.
-- [x] Make emailed beta invitations grant the invited email seven days of full beta access only after sign-in with that exact email, with no simulated entitlement state.
-- [ ] Validate Shopify authorization URLs, callback handling, scopes, and disconnected-store error paths against the configured live integration contract.
-- [ ] Improve both Cresna AI experiences with fast, evidence-bound store intelligence, honest estimated-impact guidance, and clear missing-data limits without claiming unsupported capabilities.
-- [x] Align plan comparison and gating with actual premium capabilities, including Stripe-ready trial/cancellation behavior and documented future RevenueCat integration boundaries.
+- [x] Superseded closed-beta owner and normal-user admission verification with permanent configured-owner entitlement, owner-only server rejection, and public free-workspace access verification.
+- [x] Preserve a beta access-request waitlist with truthful email-invitation messaging, persisted request status, and a safe owner-driven notification path that never auto-grants beta access.
+- [x] Replace prior closed-beta signed-in routing with public sign-in to the limited free workspace; owners, paying users, and invited beta testers retain their respective entitlements.
+- [x] Add a persistent one-time merchant onboarding tutorial with step completion storage, replay from Settings, and no automatic re-show after completion or dismissal.
+- [ ] Expand Settings with account identity, workspace preferences, notifications, connected-store controls, data-permission explanations, and tutorial replay while keeping sensitive billing data out of Cresna.
+- [x] Build a Shopify-inspired dark commerce workspace navigation for Orders, Drafts, Shipping, Products, Customers, Growth, Discounts, Content, Markets, Finance, and Analytics that surfaces only implemented intelligence and labels unavailable integrations honestly.
+- [ ] Expand the connected-store intelligence contract and permission model to produce deeper evidence-backed views for supported order, catalog, customer, pricing, marketing-content, and market signals without fabricating access to Shopify features Cresna does not have.
+- [ ] Add merchant-approved AI write permissions for supported connected-store changes, explicit per-action confirmation, an audit trail, and a clear unavailable state until Shopify write scopes and APIs are configured.
+- [x] Apply the documented Shopify navigation principles to Cresna’s workspace information architecture—fewer task groups, clear current location, and dependable return paths—without copying Shopify’s trade dress or overstating Cresna’s capabilities.
+- [x] Supersede closed-beta-only admission with public signup/login, a truthful limited free workspace, a visible paid-plan path, and no automatic free trial for standard users.
+- [x] Change email-bound beta access to a non-reusable two-day entitlement that starts only after the invited email signs in, displays a timer, and requires feedback at expiry before paid-plan continuation.
+- [x] Increase Pro and Growth AI action allowances to product-justified limits, preserve unrestricted owner access, and disclose limits without promising unlimited unsupported automation.
+- [ ] Prepare a RevenueCat-ready entitlement, offering, package, paywall, and webhook contract that maps to Cresna Free, Pro, Growth, and Beta states without claiming the live RevenueCat connection is already active.
+- [x] Update public, authenticated, and billing copy to distinguish available free features, paid-only features, invite-only beta access, configured Stripe behavior, and the pending RevenueCat activation path truthfully.
+- [x] Enforce beta-expiry final-feedback completion before an expired tester can begin paid checkout, with a server-side checkout guard and a direct user-interface handoff back to the final feedback page.
+- [x] Fix the first-use Growth Profile query so an authenticated workspace with no saved profile receives a stable empty-state contract rather than an undefined query result.

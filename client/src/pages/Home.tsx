@@ -10,21 +10,25 @@ const plans = [
     name: "Pro",
     price: "$19",
     description: "A focused growth loop for independent owners who need useful work, not another chatbot.",
-    features: ["Business Brain + transparent Growth Score", "Evidence-backed Opportunity Engine", "75 custom AI actions per month"],
+    features: ["Business Brain + transparent Growth Score", "Evidence-backed Opportunity Engine", "500 custom AI actions per month"],
   },
   {
     name: "Growth",
     price: "$49",
     description: "Four times more custom-AI capacity for growing brands that turn opportunities into reviewed improvements each week.",
-    features: ["Everything in Pro", "300 custom AI actions per month", "Four times the monthly custom-AI capacity"],
+    features: ["Everything in Pro", "2,500 custom AI actions per month", "Five times the monthly custom-AI capacity"],
   },
 ];
 
 export default function Home() {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
-  const goToWorkspace = () => (user ? setLocation("/app") : startLogin());
+  const goToWorkspace = () => {
+    if (!user) return startLogin();
+    setLocation("/app");
+  };
   const signIn = () => startLogin();
+  const entryLabel = user ? "Open dashboard" : "Create free workspace";
 
   return (
     <div id="top" className="cresna-public-shell min-h-screen overflow-hidden bg-background text-foreground">
@@ -38,8 +42,8 @@ export default function Home() {
             <a className="transition-colors hover:text-foreground" href="#method">Method</a>
             <a className="transition-colors hover:text-foreground" href="#pricing">Pricing</a>
           </nav>
-          <div className="flex items-center gap-2"><ThemeToggle className="hidden sm:inline-flex" />{!user ? <button type="button" onClick={signIn} className="hidden px-3 py-2 text-xs font-bold text-muted-foreground hover:text-foreground sm:inline-flex">Sign in</button> : null}<Button onClick={goToWorkspace} className="h-10 rounded-full px-5 text-xs font-bold shadow-none">
-            {user ? "Open workspace" : "Start free trial"}<ArrowRight className="ml-2 h-3.5 w-3.5" />
+          <div className="flex items-center gap-2"><ThemeToggle className="hidden sm:inline-flex" />{!user ? <button type="button" onClick={signIn} className="hidden px-3 py-2 text-xs font-bold text-muted-foreground hover:text-foreground sm:inline-flex">Log in / sign up</button> : null}<Button onClick={goToWorkspace} className="h-10 rounded-full px-5 text-xs font-bold shadow-none">
+            {entryLabel}<ArrowRight className="ml-2 h-3.5 w-3.5" />
           </Button></div>
         </div>
       </header>
@@ -56,8 +60,8 @@ export default function Home() {
                 Cresna turns approved Shopify data into a Business Brain, finds evidence-backed opportunities, creates reviewable work, and measures what changed after you act.
               </p>
               <div className="reveal-up-delay mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-                <Button onClick={goToWorkspace} size="lg" className="h-14 rounded-full px-7 text-sm font-bold">Start your 14-day trial <ArrowRight className="ml-2 h-4 w-4" /></Button>
-                <span className="text-xs font-medium text-[#65706b]">No store data is read until you approve access.</span>
+                <Button onClick={goToWorkspace} size="lg" className="h-14 rounded-full px-7 text-sm font-bold">{entryLabel}<ArrowRight className="ml-2 h-4 w-4" /></Button>
+                <span className="text-xs font-medium text-[#65706b]">Start free. Connect a store only when you approve the data access.</span>
               </div>
             </div>
 
@@ -86,9 +90,9 @@ export default function Home() {
         </section>
 
         <section id="pricing" className="container py-20 lg:py-28">
-          <div className="max-w-2xl"><p className="eyebrow text-[10px] text-[#65706b]">Straightforward pricing</p><h2 className="mt-5 text-[clamp(2.3rem,4.6vw,4.3rem)] font-extrabold leading-[0.95] tracking-[-0.07em]">A plan that grows with your operating rhythm.</h2><p className="mt-6 text-[15px] leading-7 text-[#65706b]">Start with a 14-day trial. Upgrade when Cresna becomes part of how your team chooses what to work on next.</p></div>
-          <div className="mt-12 grid gap-5 lg:grid-cols-2">{plans.map((plan, index) => <article key={plan.name} className={`rounded-[1.4rem] border p-7 ${index === 1 ? "border-[#17201e] bg-[#17201e] text-[#f8f7f2] shadow-[0_20px_50px_rgba(23,32,30,0.14)]" : "border-[#17201e]/15 bg-[#fdfdfb]"}`}><div className="flex items-start justify-between"><div><p className={`eyebrow text-[10px] ${index === 1 ? "text-[#d9fa55]" : "text-[#65706b]"}`}>{plan.name}</p><p className="mt-5 text-5xl font-extrabold tracking-[-0.07em]">{plan.price}</p><p className={`mt-2 text-xs ${index === 1 ? "text-[#b6c1bb]" : "text-[#65706b]"}`}>per month</p></div>{index === 1 && <span className="rounded-full bg-[#d9fa55] px-3 py-1.5 text-[10px] font-bold text-[#17201e]">Most complete</span>}</div><p className={`mt-6 text-sm leading-6 ${index ? "text-[#d9e1dc]" : "text-[#53605a]"}`}>{plan.description}</p><ul className="mt-7 space-y-3">{plan.features.map(feature => <li key={feature} className={`flex gap-3 text-sm ${index ? "text-[#e4e9e5]" : "text-[#53605a]"}`}><Check className={`mt-0.5 h-4 w-4 shrink-0 ${index ? "text-[#d9fa55]" : "text-[#7c9b1e]"}`} />{feature}</li>)}</ul><Button onClick={goToWorkspace} className={`mt-9 h-11 w-full rounded-full text-xs font-bold ${index ? "bg-[#d9fa55] text-[#17201e] hover:bg-[#e4ff83]" : "bg-[#17201e] text-[#f8f7f2] hover:bg-[#293630]"}`}>Start free trial <ArrowRight className="ml-2 h-3.5 w-3.5" /></Button></article>)}</div>
-          <p className="mt-6 text-center text-xs text-[#65706b]">Annual subscriptions receive two months free at checkout.</p>
+          <div className="max-w-2xl"><p className="eyebrow text-[10px] text-[#65706b]">Straightforward pricing</p><h2 className="mt-5 text-[clamp(2.3rem,4.6vw,4.3rem)] font-extrabold leading-[0.95] tracking-[-0.07em]">A plan that grows with your operating rhythm.</h2><p className="mt-6 text-[15px] leading-7 text-[#65706b]">Every workspace begins on Cresna Free with limited AI actions. Upgrade when the paid capacity and deeper operating workflows are useful to your business.</p></div>
+          <div className="mt-12 grid gap-5 lg:grid-cols-2">{plans.map((plan, index) => <article key={plan.name} className={`rounded-[1.4rem] border p-7 ${index === 1 ? "border-[#17201e] bg-[#17201e] text-[#f8f7f2] shadow-[0_20px_50px_rgba(23,32,30,0.14)]" : "border-[#17201e]/15 bg-[#fdfdfb]"}`}><div className="flex items-start justify-between"><div><p className={`eyebrow text-[10px] ${index === 1 ? "text-[#d9fa55]" : "text-[#65706b]"}`}>{plan.name}</p><p className="mt-5 text-5xl font-extrabold tracking-[-0.07em]">{plan.price}</p><p className={`mt-2 text-xs ${index === 1 ? "text-[#b6c1bb]" : "text-[#65706b]"}`}>per month</p></div>{index === 1 && <span className="rounded-full bg-[#d9fa55] px-3 py-1.5 text-[10px] font-bold text-[#17201e]">Most complete</span>}</div><p className={`mt-6 text-sm leading-6 ${index ? "text-[#d9e1dc]" : "text-[#53605a]"}`}>{plan.description}</p><ul className="mt-7 space-y-3">{plan.features.map(feature => <li key={feature} className={`flex gap-3 text-sm ${index ? "text-[#e4e9e5]" : "text-[#53605a]"}`}><Check className={`mt-0.5 h-4 w-4 shrink-0 ${index ? "text-[#d9fa55]" : "text-[#7c9b1e]"}`} />{feature}</li>)}</ul><Button onClick={() => user ? setLocation("/app/billing") : startLogin()} className={`mt-9 h-11 w-full rounded-full text-xs font-bold ${index ? "bg-[#d9fa55] text-[#17201e] hover:bg-[#e4ff83]" : "bg-[#17201e] text-[#f8f7f2] hover:bg-[#293630]"}`}>Choose {plan.name} <ArrowRight className="ml-2 h-3.5 w-3.5" /></Button></article>)}</div>
+          <p className="mt-6 text-center text-xs text-[#65706b]">Cresna Free includes 10 reviewable AI actions per month. Pro includes 500; Growth includes 2,500.</p>
         </section>
       </main>
       <footer className="border-t border-[#17201e]/10 py-7"><div className="container flex flex-col gap-4 text-xs text-[#65706b] sm:flex-row sm:items-center sm:justify-between"><span className="font-semibold text-[#17201e]">cresna</span><span>Growth intelligence for independent commerce.</span><a href="#top" className="inline-flex items-center gap-1 font-semibold text-[#17201e]">Back to top <ChevronDown className="h-3 w-3 rotate-180" /></a></div></footer>

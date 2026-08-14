@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { buildCheckoutSessionConfig, getUnpaidPreviewAccess, hasLiveStripeAccess, summarizeCurrentSubscriptions } from "./billing";
 
 describe("Stripe Checkout configuration", () => {
-  it("creates a subscription Checkout configuration with Cresna metadata and a fourteen-day trial", () => {
+  it("creates a subscription Checkout configuration with Cresna metadata and no automatic free trial", () => {
     const config = buildCheckoutSessionConfig({ user: { id: 42, email: "owner@example.com", name: "Owner" }, customerId: "cus_123", priceId: "price_123", origin: "https://cresna.example", planKey: "pro" });
     expect(config).toMatchObject({
       mode: "subscription",
@@ -11,7 +11,7 @@ describe("Stripe Checkout configuration", () => {
       payment_method_collection: "always",
       allow_promotion_codes: true,
       metadata: { user_id: "42", plan: "pro" },
-      subscription_data: { trial_period_days: 14, trial_settings: { end_behavior: { missing_payment_method: "cancel" } }, metadata: { user_id: "42", plan: "pro" } },
+      subscription_data: { metadata: { user_id: "42", plan: "pro" } },
       success_url: "https://cresna.example/app/billing?checkout=success",
       cancel_url: "https://cresna.example/app/billing?checkout=canceled",
     });

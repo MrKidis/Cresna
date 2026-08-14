@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getMonthlyAiActionLimit, subscriptionPlans } from "./products";
+import { freePlan, getMonthlyAiActionLimit, subscriptionPlans } from "./products";
 
 describe("Stripe subscription catalog", () => {
   it("uses a fourteen-day trial and an annual price equal to ten monthly periods", () => {
@@ -18,10 +18,12 @@ describe("Stripe subscription catalog", () => {
   });
 
   it("provides materially higher monthly AI-action capacity while preserving unrestricted owner and beta access", () => {
-    expect(subscriptionPlans.pro.monthlyAiActions).toBe(75);
-    expect(subscriptionPlans.growth.monthlyAiActions).toBe(300);
-    expect(getMonthlyAiActionLimit({ accessSource: "stripe", plan: "pro" })).toBe(75);
-    expect(getMonthlyAiActionLimit({ accessSource: "stripe", plan: "growth" })).toBe(300);
+    expect(subscriptionPlans.pro.monthlyAiActions).toBe(500);
+    expect(subscriptionPlans.growth.monthlyAiActions).toBe(2500);
+    expect(freePlan.monthlyAiActions).toBe(10);
+    expect(getMonthlyAiActionLimit({ accessSource: "stripe", plan: "pro" })).toBe(500);
+    expect(getMonthlyAiActionLimit({ accessSource: "stripe", plan: "growth" })).toBe(2500);
+    expect(getMonthlyAiActionLimit({ accessSource: "free", plan: "Free" })).toBe(10);
     expect(getMonthlyAiActionLimit({ accessSource: "owner", plan: "Growth" })).toBe(Number.POSITIVE_INFINITY);
   });
 });

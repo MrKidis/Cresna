@@ -3,6 +3,7 @@ import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
   aiActionDrafts,
+  betaAccessRequests,
   billingAccounts,
   betaFeatureOverrides,
   betaFeedback,
@@ -15,6 +16,7 @@ import {
   shopifyOauthStates,
   storeDailyMetrics,
   stores,
+  userOnboarding,
   users,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
@@ -120,6 +122,35 @@ export async function updateWorkspaceName(userId: number, workspaceName: string)
   return getWorkspaceProfile(userId);
 }
 
+export type OnboardingStatus = "not_started" | "completed" | "dismissed";
+
+export async function getUserOnboarding(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const record = (await db.select().from(userOnboarding).where(eq(userOnboarding.userId, userId)).limit(1))[0];
+  return record ?? { userId, status: "not_started" as const, completedAt: null, dismissedAt: null };
+}
+
+export async function setUserOnboardingStatus(userId: number, status: OnboardingStatus) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const now = new Date();
+  const values = {
+    userId,
+    status,
+    completedAt: status === "completed" ? now : null,
+    dismissedAt: status === "dismissed" ? now : null,
+  };
+  await db.insert(userOnboarding).values(values).onDuplicateKeyUpdate({
+    set: {
+      status: values.status,
+      completedAt: values.completedAt,
+      dismissedAt: values.dismissedAt,
+    },
+  });
+  return getUserOnboarding(userId);
+}
+
 export async function getGrowthProfile(userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
@@ -183,11 +214,11 @@ export async function activateEligibleBetaForUser(userId: number) {
   const now = new Date();
   if (invite.status === "active" && invite.expiresAt && invite.expiresAt <= now) {
     await db.update(foundingBetaInvites).set({ status: "expired" }).where(eq(foundingBetaInvites.id, invite.id));
-    return null;
+    return { ...invite, status: "expired" as const };
   }
-  if (invite.status === "expired") return null;
+  if (invite.status === "expired") return invite;
   if (invite.status === "invited") {
-    const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const expiresAt = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
     await db.update(foundingBetaInvites).set({ status: "active", activatedUserId: userId, activatedAt: now, expiresAt }).where(eq(foundingBetaInvites.id, invite.id));
     return { ...invite, status: "active" as const, activatedUserId: userId, activatedAt: now, expiresAt };
   }
@@ -202,10 +233,51 @@ export async function createFoundingBetaInvite(ownerUserId: number, email: strin
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
   const normalizedEmail = email.trim().toLowerCase();
-  await db.insert(foundingBetaInvites).values({ email: normalizedEmail, invitedByUserId: ownerUserId }).onDuplicateKeyUpdate({
-    set: { status: "invited", activatedUserId: null, activatedAt: null, expiresAt: null, deliveryStatus: "pending", deliveryMessageId: null, deliveryError: null, deliveredAt: null },
-  });
+  const existing = (await db.select().from(foundingBetaInvites).where(eq(foundingBetaInvites.email, normalizedEmail)).limit(1))[0];
+  if (existing?.activatedAt) throw new Error("This email has already used its one-time Cresna beta access and cannot be invited again.");
+  if (existing) {
+    await db.update(foundingBetaInvites).set({ invitedByUserId: ownerUserId, status: "invited", deliveryStatus: "pending", deliveryMessageId: null, deliveryError: null, deliveredAt: null }).where(eq(foundingBetaInvites.id, existing.id));
+  } else {
+    await db.insert(foundingBetaInvites).values({ email: normalizedEmail, invitedByUserId: ownerUserId });
+  }
   return (await db.select().from(foundingBetaInvites).where(eq(foundingBetaInvites.email, normalizedEmail)).limit(1))[0];
+}
+
+export async function createBetaAccessRequest(input: { email: string; storeUrl?: string | null; note?: string | null }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const email = input.email.trim().toLowerCase();
+  const values = {
+    email,
+    storeUrl: input.storeUrl?.trim() || null,
+    note: input.note?.trim() || null,
+  };
+  await db.insert(betaAccessRequests).values(values).onDuplicateKeyUpdate({
+    set: {
+      storeUrl: values.storeUrl,
+      note: values.note,
+    },
+  });
+  return (await db.select().from(betaAccessRequests).where(eq(betaAccessRequests.email, email)).limit(1))[0];
+}
+
+export async function listBetaAccessRequests() {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  return db.select().from(betaAccessRequests).orderBy(desc(betaAccessRequests.createdAt));
+}
+
+export async function getBetaAccessRequest(requestId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  return (await db.select().from(betaAccessRequests).where(eq(betaAccessRequests.id, requestId)).limit(1))[0];
+}
+
+export async function markBetaAccessRequestInvited(requestId: number, ownerUserId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.update(betaAccessRequests).set({ status: "invited", invitedByUserId: ownerUserId, invitedAt: new Date() }).where(eq(betaAccessRequests.id, requestId));
+  return getBetaAccessRequest(requestId);
 }
 
 export async function setFoundingBetaInviteDelivery(input: { inviteId: number; status: "sent" | "failed" | "unconfigured"; messageId?: string | null; error?: string | null }) {
@@ -249,7 +321,8 @@ export async function saveBetaFeedback(input: BetaFeedbackInput & { userId: numb
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
   const invite = await activateEligibleBetaForUser(input.userId);
-  if (!invite || invite.status !== "active") throw new Error("An active Founding Beta invitation is required to submit feedback");
+  if (!invite || (invite.status !== "active" && invite.status !== "expired")) throw new Error("A Cresna beta invitation is required to submit feedback");
+  if (invite.status === "expired" && input.checkpoint !== "day_7") throw new Error("Beta access has ended. Please submit the final feedback check-in before choosing a paid plan.");
   const values = toBetaFeedbackPersistenceValues(input, invite.id);
   await db.insert(betaFeedback).values(values).onDuplicateKeyUpdate({ set: { growthProfileRating: values.growthProfileRating, mostUsefulRecommendation: values.mostUsefulRecommendation, willingnessToPay: values.willingnessToPay, feedbackText: values.feedbackText } });
   return invite;
