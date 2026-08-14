@@ -8,12 +8,14 @@ import {
   getAnalyticsOverview,
   getCatalogProductsForUser,
   getMonthlyAiActionDraftCount,
+  getMerchantWriteApprovalsForUser,
   getBetaFeedbackForUser,
   getBetaInviteForUser,
   getGrowthProfile,
   isBetaFeatureEnabledForUser,
   getOwnerOverview,
   getRecommendationActionsForUser,
+  getUserNotificationPreferences,
   getUserOnboarding,
   getRecommendationsForUser,
   getWorkspaceProfile,
@@ -23,8 +25,10 @@ import {
   markBetaAccessRequestInvited,
   saveBetaFeedback,
   setBetaFeatureOverride,
+  updateUserNotificationPreferences,
   setUserOnboardingStatus,
   updateGrowthProfile,
+  requestMerchantWriteApproval,
   updateWorkspaceName,
 } from "./db";
 import { createBillingPortal, createSubscriptionCheckout, getBillingAccess, getPlatformBillingSummary, getUnpaidPreviewAccess } from "./billing";
@@ -83,6 +87,10 @@ export const appRouter = router({
   onboarding: router({
     me: protectedProcedure.query(({ ctx }) => getUserOnboarding(ctx.user.id)),
     setStatus: protectedProcedure.input(z.object({ status: z.enum(["not_started", "completed", "dismissed"]) })).mutation(({ ctx, input }) => setUserOnboardingStatus(ctx.user.id, input.status)),
+  }),
+  notifications: router({
+    preferences: protectedProcedure.query(({ ctx }) => getUserNotificationPreferences(ctx.user.id)),
+    updatePreferences: protectedProcedure.input(z.object({ betaUpdates: z.boolean(), productUpdates: z.boolean() })).mutation(({ ctx, input }) => updateUserNotificationPreferences({ userId: ctx.user.id, ...input })),
   }),
   growthProfile: router({
     me: closedBetaWorkspaceProcedure.query(async ({ ctx }) => ensureGrowthProfileContract(await getGrowthProfile(ctx.user.id), ctx.user.id)),
@@ -148,6 +156,8 @@ export const appRouter = router({
       return generatePositioningDraft({ userId: ctx.user.id });
     }),
     review: closedBetaWorkspaceProcedure.input(z.object({ draftId: z.number().int().positive(), status: z.enum(["approved", "rejected"]) })).mutation(({ ctx, input }) => updateAiActionDraftStatus({ userId: ctx.user.id, ...input })),
+    writeApprovals: closedBetaWorkspaceProcedure.query(({ ctx }) => getMerchantWriteApprovalsForUser(ctx.user.id)),
+    requestWriteApproval: closedBetaWorkspaceProcedure.input(z.object({ draftId: z.number().int().positive(), approvalNote: z.string().trim().max(600).optional() })).mutation(({ ctx, input }) => requestMerchantWriteApproval({ userId: ctx.user.id, ...input })),
   }),
   foundingBeta: router({
     me: closedBetaWorkspaceProcedure.query(({ ctx }) => getBetaFeedbackForUser(ctx.user.id)),

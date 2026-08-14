@@ -120,6 +120,21 @@ export const userOnboarding = mysqlTable(
   table => [uniqueIndex("user_onboarding_user_unique").on(table.userId)]
 );
 
+/** User-controlled non-transactional Cresna email preferences. Account, billing, and security notices remain separate. */
+export const userNotificationPreferences = mysqlTable(
+  "userNotificationPreferences",
+  {
+    id: bigint("id", { mode: "number" }).autoincrement().primaryKey(),
+    userId: int("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    betaUpdates: int("betaUpdates").default(1).notNull(),
+    productUpdates: int("productUpdates").default(1).notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [uniqueIndex("user_notification_preferences_user_unique").on(table.userId)]
+);
+
 /** The owner can enable narrowly scoped experimental capabilities per beta workspace. */
 export const betaFeatureOverrides = mysqlTable(
   "betaFeatureOverrides",
@@ -415,6 +430,26 @@ export const aiActionDrafts = mysqlTable(
   table => [index("ai_action_drafts_store_status_idx").on(table.storeId, table.status)]
 );
 
+/** Per-action merchant consent for a future Shopify write. Current records remain unavailable until write scopes and APIs are configured. */
+export const merchantWriteApprovals = mysqlTable(
+  "merchantWriteApprovals",
+  {
+    id: bigint("id", { mode: "number" }).autoincrement().primaryKey(),
+    userId: int("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    draftId: bigint("draftId", { mode: "number" })
+      .notNull()
+      .references(() => aiActionDrafts.id, { onDelete: "cascade" }),
+    operation: mysqlEnum("operation", ["product_content_publish", "positioning_publish"]).notNull(),
+    status: mysqlEnum("status", ["not_configured", "approved", "executed", "rejected"]).default("not_configured").notNull(),
+    approvalNote: text("approvalNote"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [uniqueIndex("merchant_write_approval_draft_operation_unique").on(table.draftId, table.operation), index("merchant_write_approval_user_status_idx").on(table.userId, table.status)]
+);
+
 /** Decision history is the durable learning trail for the merchant’s Business Brain. */
 export const businessBrainEvents = mysqlTable(
   "businessBrainEvents",
@@ -457,7 +492,7 @@ export const recommendationActions = mysqlTable(
   table => [index("recommendation_actions_recommendation_idx").on(table.recommendationId)]
 );
 
-/** Stripe identifiers only; Stripe remains the system of record for billing state and payment data. */
+/** Billing-provider identifiers; payment credentials remain exclusively with Stripe or RevenueCat. */
 export const billingAccounts = mysqlTable(
   "billingAccounts",
   {
@@ -466,6 +501,10 @@ export const billingAccounts = mysqlTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }).unique(),
+    revenueCatAppUserId: varchar("revenueCatAppUserId", { length: 255 }).unique(),
+    revenueCatEntitlement: varchar("revenueCatEntitlement", { length: 120 }),
+    revenueCatExpiresAt: timestamp("revenueCatExpiresAt"),
+    revenueCatUpdatedAt: timestamp("revenueCatUpdatedAt"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   },

@@ -4,7 +4,7 @@ import { invokeLLM } from "./_core/llm";
 import { getDb, getGrowthProfile, getPrimaryStoreForUser } from "./db";
 import { isDraftCapableRecommendationCategory } from "./recommendationEngine";
 
-type DraftPayload = { descriptionHtml?: string; seoTitle?: string; seoDescription?: string; notes?: string[]; positioning?: string; homepageHeadline?: string; proofPoints?: string[]; missingEvidence?: string[] };
+type DraftPayload = { descriptionHtml?: string; seoTitle?: string; seoDescription?: string; notes?: string[]; positioning?: string; homepageHeadline?: string; proofPoints?: string[]; missingEvidence?: string[]; evidenceUsed?: string[] };
 
 function parseDraft(value: string): DraftPayload | null {
   try {
@@ -77,7 +77,7 @@ export async function generateProductDescriptionDraft(input: { userId: number; p
     model: "gpt-5-mini",
     max_tokens: 1800,
     messages: [
-      { role: "system", content: "You create safe ecommerce product-content drafts for Cresna. Use only facts in the supplied product and Business Brain. Preserve the approved voice when supplied. Do not invent materials, certifications, dimensions, availability, outcomes, reviews, comparisons, or guarantees. Return reviewable concise HTML only for descriptionHtml using p, h3, and ul tags. Notes must explicitly identify any important missing product facts rather than guessing." },
+      { role: "system", content: "You create safe ecommerce product-content drafts for Cresna. Use only facts in the supplied product and Business Brain. Preserve the approved voice when supplied. Do not invent materials, certifications, dimensions, availability, outcomes, reviews, comparisons, or guarantees. Return reviewable concise HTML only for descriptionHtml using p, h3, and ul tags. Notes must explicitly identify any important missing product facts rather than guessing. evidenceUsed must name only supplied source fields that actually shaped the draft, such as product.title, product.vendor, product.productType, product.currentDescription, businessBrain.brandVoice, or businessBrain.positioning." },
       { role: "user", content: JSON.stringify(evidence) },
     ],
     response_format: {
@@ -92,8 +92,9 @@ export async function generateProductDescriptionDraft(input: { userId: number; p
             seoTitle: { type: "string" },
             seoDescription: { type: "string" },
             notes: { type: "array", items: { type: "string" }, maxItems: 5 },
+            evidenceUsed: { type: "array", items: { type: "string" }, maxItems: 8 },
           },
-          required: ["descriptionHtml", "seoTitle", "seoDescription", "notes"],
+          required: ["descriptionHtml", "seoTitle", "seoDescription", "notes", "evidenceUsed"],
           additionalProperties: false,
         },
       },
@@ -135,7 +136,7 @@ export async function generatePositioningDraft(input: { userId: number }) {
     model: "gpt-5-mini",
     max_tokens: 1300,
     messages: [
-      { role: "system", content: "You create cautious brand-positioning drafts for Cresna. Use only the approved Business Brain fields. Do not invent market claims, customer research, comparisons, awards, proof, testimonials, performance, or benefits not supplied by the merchant. If essential context is missing, name it in missingEvidence instead of guessing. The output is a private review draft, never a claim of market truth." },
+      { role: "system", content: "You create cautious brand-positioning drafts for Cresna. Use only the approved Business Brain fields. Do not invent market claims, customer research, comparisons, awards, proof, testimonials, performance, or benefits not supplied by the merchant. If essential context is missing, name it in missingEvidence instead of guessing. The output is a private review draft, never a claim of market truth. evidenceUsed must name only the approved Business Brain fields that shaped the draft." },
       { role: "user", content: JSON.stringify(evidence) },
     ],
     response_format: {
@@ -150,8 +151,9 @@ export async function generatePositioningDraft(input: { userId: number }) {
             homepageHeadline: { type: "string" },
             proofPoints: { type: "array", items: { type: "string" }, maxItems: 4 },
             missingEvidence: { type: "array", items: { type: "string" }, maxItems: 5 },
+            evidenceUsed: { type: "array", items: { type: "string" }, maxItems: 8 },
           },
-          required: ["positioning", "homepageHeadline", "proofPoints", "missingEvidence"],
+          required: ["positioning", "homepageHeadline", "proofPoints", "missingEvidence", "evidenceUsed"],
           additionalProperties: false,
         },
       },

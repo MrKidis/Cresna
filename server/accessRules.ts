@@ -1,4 +1,4 @@
-export type AccessSource = "owner" | "beta" | "stripe" | "free" | "none";
+export type AccessSource = "owner" | "beta" | "stripe" | "revenuecat" | "free" | "none";
 
 export function permitsBetaFeature(accessSource: AccessSource, featureEnabled: boolean) {
   return accessSource !== "beta" || featureEnabled;

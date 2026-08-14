@@ -22,4 +22,11 @@ describe("structured AI draft output", () => {
     expect(extractStructuredDraftText(content)).toBe('{"positioning":"Useful"}');
     expect(parseStructuredDraft(content, "failed")).toEqual({ positioning: "Useful" });
   });
+
+  it("preserves explicit source-field citations in a reviewable draft", () => {
+    const content = '{"descriptionHtml":"<p>Useful</p>","evidenceUsed":["product.title","businessBrain.brandVoice"]}';
+    expect(parseStructuredDraft(content, "failed")).toMatchObject({
+      evidenceUsed: ["product.title", "businessBrain.brandVoice"],
+    });
+  });
 });

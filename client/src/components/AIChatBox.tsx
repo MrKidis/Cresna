@@ -32,6 +32,9 @@ export type AIChatBoxProps = {
    */
   isLoading?: boolean;
 
+  /** Brief, truthful status shown while the server is preparing a response. */
+  loadingLabel?: string;
+
   /**
    * Placeholder text for the input field
    */
@@ -114,6 +117,7 @@ export function AIChatBox({
   messages,
   onSendMessage,
   isLoading = false,
+  loadingLabel = "Cresna is preparing a response…",
   placeholder = "Type your message...",
   className,
   height = "600px",
@@ -209,14 +213,16 @@ export function AIChatBox({
               {suggestedPrompts && suggestedPrompts.length > 0 && (
                 <div className="flex max-w-2xl flex-wrap justify-center gap-2">
                   {suggestedPrompts.map((prompt, index) => (
-                    <button
+                    <Button
+                      type="button"
+                      variant="outline"
                       key={index}
                       onClick={() => onSendMessage(prompt)}
                       disabled={isLoading}
-                      className="rounded-lg border border-border bg-card px-4 py-2 text-sm transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                      className="h-auto rounded-lg bg-card px-4 py-2 text-sm"
                     >
                       {prompt}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               )}
@@ -292,8 +298,9 @@ export function AIChatBox({
                   <div className="size-8 shrink-0 mt-1 rounded-full bg-primary/10 flex items-center justify-center">
                     <Sparkles className="size-4 text-primary" />
                   </div>
-                  <div className="rounded-lg bg-muted px-4 py-2.5">
-                    <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                  <div className="flex items-center gap-2 rounded-lg bg-muted px-4 py-2.5 text-xs font-medium text-muted-foreground">
+                    <Loader2 className="size-4 animate-spin" />
+                    <span>{loadingLabel}</span>
                   </div>
                 </div>
               )}

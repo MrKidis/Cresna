@@ -6,6 +6,7 @@ import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
 import { registerShopifyRoutes } from "../shopify";
+import { registerRevenueCatWebhookRoutes } from "../revenueCatWebhook";
 import { handleStripeEvent, verifyStripeEvent } from "../billing";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
@@ -45,6 +46,7 @@ async function startServer() {
     }
   });
   registerShopifyRoutes(app);
+  registerRevenueCatWebhookRoutes(app);
   // Configure body parser with larger size limit for file uploads
   app.use(express.json({ limit: "50mb" }));
   app.use(express.urlencoded({ limit: "50mb", extended: true }));

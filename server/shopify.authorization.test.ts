@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createHmac } from "crypto";
-import { buildShopifyAuthorizationUrl, isShopifyDisconnectTopic, validateShopDomain, verifyOAuthCallback } from "./shopify";
+import { buildShopifyAuthorizationUrl, hasRequiredShopifyReadScopes, isShopifyDisconnectTopic, validateShopDomain, verifyOAuthCallback } from "./shopify";
 
 describe("Shopify authorization contract", () => {
   it("normalizes a valid myshopify domain and rejects arbitrary redirect domains", () => {
@@ -16,6 +16,12 @@ describe("Shopify authorization contract", () => {
     expect(url.searchParams.get("scope")).toBe("read_orders,read_products,read_customers");
     expect(url.searchParams.get("redirect_uri")).toBe("https://cresna.example/api/shopify/callback");
     expect(url.searchParams.get("state")).toBe("state_123");
+  });
+
+  it("requires every disclosed read scope before Cresna accepts an installed store", () => {
+    expect(hasRequiredShopifyReadScopes("read_products,read_orders,read_customers")).toBe(true);
+    expect(hasRequiredShopifyReadScopes("read_orders,read_products")).toBe(false);
+    expect(hasRequiredShopifyReadScopes(undefined)).toBe(false);
   });
 
   it("accepts a valid callback signature and rejects a tampered OAuth callback before install", () => {

@@ -109,6 +109,7 @@ export default function OwnerPanel() {
             messages={messages}
             onSendMessage={sendOwnerQuestion}
             isLoading={assistant.isPending}
+            loadingLabel="Reviewing the verified aggregate platform snapshot…"
             height="370px"
             className="border-white/10 bg-card text-card-foreground"
             placeholder="Ask about activation, adoption, or outcome signals…"

@@ -39,7 +39,7 @@ export function buildOwnerAssistantMessages(question: string, overview: OwnerOve
   return [
     {
       role: "system",
-      content: "You are Cresna Owner Intelligence, a private operating assistant. Answer using only the supplied aggregated platform snapshot. Never infer, reveal, request, or fabricate any individual merchant, customer, order, catalog, or payment data. Be candid about small sample sizes and missing metrics. Give concise, evidence-aware operating recommendations in Markdown. Treat this snapshot as confidential.",
+      content: "You are Cresna Owner Intelligence, a private operating assistant. Answer only from the supplied aggregated platform snapshot. Never infer, reveal, request, or fabricate individual merchant, customer, order, catalog, or payment data. Do not claim you browsed, queried tools, or saw information outside the snapshot. Be candid about small sample sizes and missing metrics. Use concise Markdown with these sections when useful: **Operating read**, **Evidence used**, **Next best move**, and **What is not known yet**. Turn the owner question into one practical platform decision, not generic advice. Treat this snapshot as confidential.",
     },
     {
       role: "user",
@@ -51,12 +51,8 @@ export function buildOwnerAssistantMessages(question: string, overview: OwnerOve
 export function buildOwnerAssistantFallback(question: string, overview: OwnerOverviewSummaryInput) {
   const snapshot = summarizeOwnerOverview(overview);
   const activeBeta = snapshot.betaInvitationCounts.active || 0;
-  const completionRate = snapshot.recommendationsGenerated > 0
-    ? Math.round((snapshot.recommendationsCompleted / snapshot.recommendationsGenerated) * 100)
-    : null;
-  const approvalRate = snapshot.aiDraftsGenerated > 0
-    ? Math.round((snapshot.aiDraftsApproved / snapshot.aiDraftsGenerated) * 100)
-    : null;
+  const completionRate = snapshot.recommendationsGenerated > 0 ? Math.round((snapshot.recommendationsCompleted / snapshot.recommendationsGenerated) * 100) : null;
+  const approvalRate = snapshot.aiDraftsGenerated > 0 ? Math.round((snapshot.aiDraftsApproved / snapshot.aiDraftsGenerated) * 100) : null;
   const nextStep = snapshot.connectedStores === 0
     ? "Prioritize the Shopify connection and consent journey: no store evidence exists yet."
     : snapshot.recommendationsGenerated === 0
@@ -65,7 +61,7 @@ export function buildOwnerAssistantFallback(question: string, overview: OwnerOve
         ? "Prioritize getting merchants from approved actions to measured outcomes so Cresna can learn from real results."
         : "Review the strongest measured outcome and turn its evidence pattern into the next product or onboarding experiment.";
 
-  return `## Verified platform snapshot\n\nI could not obtain a narrative model response for this question, so I am using Cresna's stored aggregate metrics only.\n\n- **Users:** ${snapshot.totalUsers}\n- **Connected stores:** ${snapshot.connectedStores}\n- **Active beta testers:** ${activeBeta}\n- **Opportunities generated:** ${snapshot.recommendationsGenerated}${completionRate === null ? "" : ` (${completionRate}% completed)`}\n- **AI drafts:** ${snapshot.aiDraftsGenerated}${approvalRate === null ? "" : ` (${approvalRate}% approved)`}\n- **Measured outcomes:** ${snapshot.outcomesMeasured}\n- **Structured beta feedback entries:** ${snapshot.betaFeedbackEntries}\n\n### Suggested operating focus\n${nextStep}\n\n> Your question was recorded only for this response: “${question.trim() || "Platform review"}”. This fallback does not access or expose merchant-level, customer, order, catalog, or payment data.`;
+  return `## Private platform pulse\n\n### Operating read\nFor **${question.trim() || "this platform review"}**, the current aggregate evidence points to the next step below. Cresna is using the verified platform counts available for this response; it does not use merchant-level records here.\n\n### Evidence used\n- **Users:** ${snapshot.totalUsers}\n- **Connected stores:** ${snapshot.connectedStores}\n- **Active beta testers:** ${activeBeta}\n- **Opportunities generated:** ${snapshot.recommendationsGenerated}${completionRate === null ? "" : ` (${completionRate}% completed)`}\n- **AI drafts:** ${snapshot.aiDraftsGenerated}${approvalRate === null ? "" : ` (${approvalRate}% approved)`}\n- **Measured outcomes:** ${snapshot.outcomesMeasured}\n- **Structured beta feedback entries:** ${snapshot.betaFeedbackEntries}\n\n### Next best move\n${nextStep}\n\n### What is not known yet\nThis review cannot identify individual merchants, customer behavior, order records, catalog items, or payment details. It also cannot establish causality until more connected workspaces generate and measure outcomes.`;
 }
 
 export async function answerOwnerAssistant(question: string) {
@@ -74,18 +70,15 @@ export async function answerOwnerAssistant(question: string) {
     const response = await invokeLLM({
       model: "gpt-5-mini",
       maxTokens: 700,
+      reasoning: { effort: "low" },
       messages: buildOwnerAssistantMessages(question, overview),
     });
     const content = response.choices[0]?.message.content;
-    const answer = typeof content === "string"
-      ? content.trim()
-      : Array.isArray(content) ? content.map(part => part.type === "text" ? part.text : "").join("\n").trim() : "";
-
+    const answer = typeof content === "string" ? content.trim() : Array.isArray(content) ? content.map(part => part.type === "text" ? part.text : "").join("\n").trim() : "";
     if (answer) return { answer, snapshot: summarizeOwnerOverview(overview) };
     console.warn("[Owner Assistant] Provider returned no usable content; using aggregate fallback.");
   } catch (error) {
     console.warn("[Owner Assistant] Provider request failed; using aggregate fallback.", error);
   }
-
   return { answer: buildOwnerAssistantFallback(question, overview), snapshot: summarizeOwnerOverview(overview) };
 }

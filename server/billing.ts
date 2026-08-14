@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { getBetaInviteForUser, getWorkspaceProfile, listStripeCustomerReferences, updateStripeReferences } from "./db";
+import { getBetaInviteForUser, getRevenueCatBillingForUser, getWorkspaceProfile, listStripeCustomerReferences, updateStripeReferences } from "./db";
 import { ENV } from "./_core/env";
 import { isPermanentOwner } from "./accessRules";
 import { BillingInterval, SubscriptionPlanKey, subscriptionPlans } from "./products";
@@ -126,6 +126,8 @@ export async function getBillingAccess(userId: number) {
   if (isPermanentOwner(user.openId, ENV.ownerOpenId)) return { hasAccess: true, accessSource: "owner" as const, subscription: null, plan: "Growth", status: "owner", interval: null, currentPeriodEnd: null };
   const betaInvite = await getBetaInviteForUser(userId);
   if (betaInvite?.status === "active" && betaInvite.expiresAt && betaInvite.expiresAt > new Date()) return { hasAccess: true, accessSource: "beta" as const, subscription: null, plan: "Founding Beta", status: "active", interval: null, currentPeriodEnd: betaInvite.expiresAt };
+  const revenueCatBilling = await getRevenueCatBillingForUser(userId);
+  if (revenueCatBilling?.revenueCatEntitlement && revenueCatBilling.revenueCatExpiresAt && revenueCatBilling.revenueCatExpiresAt > new Date()) return { hasAccess: true, accessSource: "revenuecat" as const, subscription: null, plan: revenueCatBilling.revenueCatEntitlement === "cresna_growth" ? "growth" : "pro", status: "active", interval: null, currentPeriodEnd: revenueCatBilling.revenueCatExpiresAt };
   if (!user.stripeCustomerId || !ENV.stripeSecretKey) return { hasAccess: true, accessSource: "free" as const, subscription: null, plan: "Free", status: "active", interval: null, currentPeriodEnd: null };
   const subscriptions = await stripe.subscriptions.list({ customer: user.stripeCustomerId, status: "all", limit: 20 });
   const subscription = subscriptions.data.find(item => hasLiveStripeAccess(item)) ?? null;

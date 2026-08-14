@@ -23,10 +23,10 @@ export default function BetaAccess() {
     <main className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border bg-background/90 backdrop-blur-md">
         <div className="container flex h-[72px] items-center justify-between">
-          <button type="button" onClick={() => setLocation("/")} className="flex items-center gap-3 rounded-lg text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <Button type="button" variant="ghost" onClick={() => setLocation("/")} className="h-auto gap-3 px-0 py-0 text-left hover:bg-transparent">
             <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-[10px] bg-primary"><img src="/manus-storage/cresna-growth-arrow-logo_f6234d79.png" alt="Cresna growth arrow" className="h-full w-full object-contain p-0.5" /></span>
-            <span className="text-[15px] font-extrabold tracking-[-0.04em] text-foreground">cresna</span>
-          </button>
+            <span className="text-[15px] font-extrabold tracking-[-0.04em] text-foreground">Cresna</span>
+          </Button>
           <ThemeToggle />
         </div>
       </header>

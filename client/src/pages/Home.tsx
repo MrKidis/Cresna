@@ -34,15 +34,15 @@ export default function Home() {
     <div id="top" className="cresna-public-shell min-h-screen overflow-hidden bg-background text-foreground">
       <header className="relative z-20 border-b border-border bg-background/90 backdrop-blur-md">
         <div className="container flex h-[72px] items-center justify-between">
-          <button onClick={() => setLocation("/")} className="flex items-center gap-3 text-left" aria-label="Cresna home">
+          <Button type="button" variant="ghost" onClick={() => setLocation("/")} className="h-auto gap-3 px-0 py-0 text-left hover:bg-transparent" aria-label="Cresna home">
                 <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-[10px] bg-[#17201e]"><img src="/manus-storage/cresna-growth-arrow-logo_f6234d79.png" alt="Cresna growth arrow" className="h-full w-full object-contain p-0.5" /></span>
-                <span className="text-[15px] font-extrabold tracking-[-0.04em] text-foreground">cresna</span>
-          </button>
+                <span className="text-[15px] font-extrabold tracking-[-0.04em] text-foreground">Cresna</span>
+          </Button>
           <nav className="hidden items-center gap-8 text-[13px] font-semibold text-muted-foreground md:flex">
             <a className="transition-colors hover:text-foreground" href="#method">Method</a>
             <a className="transition-colors hover:text-foreground" href="#pricing">Pricing</a>
           </nav>
-          <div className="flex items-center gap-2"><ThemeToggle className="hidden sm:inline-flex" />{!user ? <button type="button" onClick={signIn} className="hidden px-3 py-2 text-xs font-bold text-muted-foreground hover:text-foreground sm:inline-flex">Log in / sign up</button> : null}<Button onClick={goToWorkspace} className="h-10 rounded-full px-5 text-xs font-bold shadow-none">
+          <div className="flex items-center gap-2"><ThemeToggle className="hidden sm:inline-flex" />{!user ? <Button type="button" variant="ghost" onClick={signIn} className="hidden h-auto px-3 py-2 text-xs font-bold text-muted-foreground hover:text-foreground sm:inline-flex">Log in / sign up</Button> : null}<Button onClick={goToWorkspace} className="h-10 rounded-full px-5 text-xs font-bold shadow-none">
             {entryLabel}<ArrowRight className="ml-2 h-3.5 w-3.5" />
           </Button></div>
         </div>
@@ -95,7 +95,7 @@ export default function Home() {
           <p className="mt-6 text-center text-xs text-[#65706b]">Cresna Free includes 10 reviewable AI actions per month. Pro includes 500; Growth includes 2,500.</p>
         </section>
       </main>
-      <footer className="border-t border-[#17201e]/10 py-7"><div className="container flex flex-col gap-4 text-xs text-[#65706b] sm:flex-row sm:items-center sm:justify-between"><span className="font-semibold text-[#17201e]">cresna</span><span>Growth intelligence for independent commerce.</span><a href="#top" className="inline-flex items-center gap-1 font-semibold text-[#17201e]">Back to top <ChevronDown className="h-3 w-3 rotate-180" /></a></div></footer>
+      <footer className="border-t border-[#17201e]/10 py-7"><div className="container flex flex-col gap-4 text-xs text-[#65706b] sm:flex-row sm:items-center sm:justify-between"><span className="font-semibold text-[#17201e]">Cresna</span><span>Growth intelligence for independent commerce.</span><a href="#top" className="inline-flex items-center gap-1 font-semibold text-[#17201e]">Back to top <ChevronDown className="h-3 w-3 rotate-180" /></a></div></footer>
     </div>
   );
 }

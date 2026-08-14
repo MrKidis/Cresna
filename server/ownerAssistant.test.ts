@@ -43,7 +43,9 @@ describe("owner assistant privacy boundary", () => {
     const fallback = buildOwnerAssistantFallback("What should I do this week?", overview);
     expect(fallback).toContain("**Users:** 12");
     expect(fallback).toContain("**Connected stores:** 8");
-    expect(fallback).toContain("Suggested operating focus");
+    expect(fallback).toContain("Next best move");
+    expect(fallback).toContain("What is not known yet");
+    expect(fallback).not.toContain("could not obtain a narrative model response");
     expect(fallback).not.toContain("tester@example.com");
   });
 });

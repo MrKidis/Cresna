@@ -11,6 +11,7 @@ export const ENV = {
   shopifyClientSecret: process.env.SHOPIFY_CLIENT_SECRET ?? "",
   stripeSecretKey: process.env.STRIPE_SECRET_KEY ?? "",
   stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET ?? "",
+  revenueCatWebhookAuthorization: process.env.REVENUECAT_WEBHOOK_AUTHORIZATION ?? "",
   gmailSmtpUser: process.env.GMAIL_SMTP_USER ?? "",
   gmailSmtpAppPassword: process.env.GMAIL_SMTP_APP_PASSWORD ?? "",
 };

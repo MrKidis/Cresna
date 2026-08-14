@@ -169,26 +169,21 @@ function DashboardLayoutContent({
         >
           <SidebarHeader className="h-[72px] justify-center">
             <div className="flex items-center gap-3 px-2 transition-all w-full">
-              <button
-                onClick={toggleSidebar}
-                className="h-8 w-8 flex items-center justify-center hover:bg-accent rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
-                aria-label="Toggle navigation"
-              >
+              <Button type="button" variant="ghost" size="icon" onClick={toggleSidebar} className="h-8 w-8 shrink-0 rounded-lg" aria-label="Toggle navigation">
                 <PanelLeft className="h-4 w-4 text-muted-foreground" />
-              </button>
+              </Button>
               {!isCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="grid h-7 w-7 place-items-center overflow-hidden rounded-[8px] bg-primary"><img src="/manus-storage/cresna-growth-arrow-logo_f6234d79.png" alt="Cresna growth arrow" className="h-full w-full object-contain p-0.5" /></span>
-                  <span className="font-extrabold tracking-[-0.04em] truncate text-sidebar-foreground">cresna</span>
+                  <span className="font-extrabold tracking-[-0.04em] truncate text-sidebar-foreground">Cresna</span>
                 </div>
               ) : null}
             </div>
           </SidebarHeader>
 
-          <SidebarContent className="gap-0">
-            {menuGroups.map((group, groupIndex) => <div key={group.label} className={groupIndex ? "pt-3" : ""}><div className="px-5 pb-1 group-data-[collapsible=icon]:hidden"><p className="eyebrow text-[9px] font-medium text-[#7a847e]">{group.label}</p></div><SidebarMenu className="px-3 py-1">{group.items.map(item => { const isActive = location === routedPath(item.path); return <SidebarMenuItem key={item.path}><SidebarMenuButton isActive={isActive} onClick={() => setLocation(routedPath(item.path))} tooltip={item.label} className={`h-10 rounded-xl px-3 transition-all font-semibold text-[13px] ${isActive ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm" : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}><item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} /><span>{item.label}</span></SidebarMenuButton></SidebarMenuItem>; })}</SidebarMenu></div>)}
+          <SidebarContent className="gap-0 overflow-y-auto">
             {isOwner && !isUnpaidPreview ? <>
-              <div className="px-5 pt-4 group-data-[collapsible=icon]:hidden">
+              <div className="px-5 pb-1 group-data-[collapsible=icon]:hidden">
                 <p className="eyebrow text-[9px] font-medium text-[#7a847e]">Owner workspace</p>
               </div>
               <SidebarMenu className="px-3 py-2">
@@ -205,6 +200,7 @@ function DashboardLayoutContent({
                 </SidebarMenuItem>
               </SidebarMenu>
             </> : null}
+            {menuGroups.map((group, groupIndex) => <div key={group.label} className={(groupIndex || isOwner) ? "pt-3" : ""}><div className="px-5 pb-1 group-data-[collapsible=icon]:hidden"><p className="eyebrow text-[9px] font-medium text-[#7a847e]">{group.label}</p></div><SidebarMenu className="px-3 py-1">{group.items.map(item => { const isActive = location === routedPath(item.path); return <SidebarMenuItem key={item.path}><SidebarMenuButton isActive={isActive} onClick={() => setLocation(routedPath(item.path))} tooltip={item.label} className={`h-10 rounded-xl px-3 transition-all font-semibold text-[13px] ${isActive ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm" : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}><item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} /><span>{item.label}</span></SidebarMenuButton></SidebarMenuItem>; })}</SidebarMenu></div>)}
             <div className="px-5 pt-5 group-data-[collapsible=icon]:hidden">
               <p className="eyebrow text-[9px] font-medium text-[#7a847e]">Account</p>
             </div>
@@ -221,7 +217,7 @@ function DashboardLayoutContent({
             <div className="mb-2 flex justify-end px-1 group-data-[collapsible=icon]:justify-center"><ThemeToggle /></div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-3 rounded-lg px-1 py-1 hover:bg-accent/50 transition-colors w-full text-left group-data-[collapsible=icon]:justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <Button type="button" variant="ghost" className="h-auto w-full justify-start gap-3 rounded-lg px-1 py-1 text-left group-data-[collapsible=icon]:justify-center">
                   <Avatar className="h-9 w-9 border border-[#17201e]/10 shrink-0">
                     <AvatarFallback className="text-xs font-medium">
                       {user?.name?.charAt(0).toUpperCase()}
@@ -235,7 +231,7 @@ function DashboardLayoutContent({
                       {user?.email || "-"}
                     </p>
                   </div>
-                </button>
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem

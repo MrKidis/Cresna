@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { AlertTriangle, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Component, ReactNode } from "react";
 
 interface Props {
@@ -39,17 +40,10 @@ class ErrorBoundary extends Component<Props, State> {
               </pre>
             </div>
 
-            <button
-              onClick={() => window.location.reload()}
-              className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg",
-                "bg-primary text-primary-foreground",
-                "hover:opacity-90 cursor-pointer"
-              )}
-            >
+            <Button type="button" onClick={() => window.location.reload()} className="gap-2 rounded-lg px-4 py-2">
               <RotateCcw size={16} />
               Reload Page
-            </button>
+            </Button>
           </div>
         </div>
       );

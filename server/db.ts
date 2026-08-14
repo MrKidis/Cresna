@@ -9,6 +9,7 @@ import {
   betaFeedback,
   foundingBetaInvites,
   merchantGrowthProfiles,
+  merchantWriteApprovals,
   products,
   productDailyMetrics,
   recommendationActions,
@@ -16,12 +17,14 @@ import {
   shopifyOauthStates,
   storeDailyMetrics,
   stores,
+  userNotificationPreferences,
   userOnboarding,
   users,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
 import { isPermanentOwner } from "./accessRules";
 import { BetaFeedbackInput, toBetaFeedbackPersistenceValues } from "./betaFeedback";
+import { assertMerchantWriteApprovalEligible, merchantWriteOperationForDraft } from "./merchantWritePolicy";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -149,6 +152,21 @@ export async function setUserOnboardingStatus(userId: number, status: Onboarding
     },
   });
   return getUserOnboarding(userId);
+}
+
+export async function getUserNotificationPreferences(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const record = (await db.select().from(userNotificationPreferences).where(eq(userNotificationPreferences.userId, userId)).limit(1))[0];
+  return record ?? { userId, betaUpdates: 1, productUpdates: 1 };
+}
+
+export async function updateUserNotificationPreferences(input: { userId: number; betaUpdates: boolean; productUpdates: boolean }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const values = { userId: input.userId, betaUpdates: input.betaUpdates ? 1 : 0, productUpdates: input.productUpdates ? 1 : 0 };
+  await db.insert(userNotificationPreferences).values(values).onDuplicateKeyUpdate({ set: { betaUpdates: values.betaUpdates, productUpdates: values.productUpdates } });
+  return getUserNotificationPreferences(input.userId);
 }
 
 export async function getGrowthProfile(userId: number) {
@@ -465,6 +483,25 @@ export async function getMonthlyAiActionDraftCount(userId: number) {
   return rows.length;
 }
 
+export async function requestMerchantWriteApproval(input: { userId: number; draftId: number; approvalNote?: string | null }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const store = await getPrimaryStoreForUser(input.userId);
+  if (!store) throw new Error("Connect a Shopify store before recording a write approval");
+  const draft = (await db.select().from(aiActionDrafts).where(and(eq(aiActionDrafts.id, input.draftId), eq(aiActionDrafts.storeId, store.id))).limit(1))[0];
+  assertMerchantWriteApprovalEligible({ workspaceOwnsDraft: Boolean(draft), draftStatus: draft?.status || "generated" });
+  const operation = merchantWriteOperationForDraft(draft.actionType);
+  const values = { userId: input.userId, draftId: draft.id, operation, status: "not_configured" as const, approvalNote: input.approvalNote?.trim() || null };
+  await db.insert(merchantWriteApprovals).values(values).onDuplicateKeyUpdate({ set: { status: values.status, approvalNote: values.approvalNote } });
+  return (await db.select().from(merchantWriteApprovals).where(and(eq(merchantWriteApprovals.draftId, draft.id), eq(merchantWriteApprovals.operation, operation))).limit(1))[0];
+}
+
+export async function getMerchantWriteApprovalsForUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  return db.select().from(merchantWriteApprovals).where(eq(merchantWriteApprovals.userId, userId));
+}
+
 export async function getRecommendationsForUser(userId: number) {
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
@@ -508,4 +545,20 @@ export async function updateStripeReferences(userId: number, customerId?: string
   if (subscriptionId !== undefined) {
     await db.insert(billingAccounts).values({ userId, stripeSubscriptionId: subscriptionId || null }).onDuplicateKeyUpdate({ set: { stripeSubscriptionId: subscriptionId || null } });
   }
+}
+
+export async function updateRevenueCatEntitlement(input: { appUserId: string; entitlement: string | null; expiresAt: Date | null }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const user = (await db.select().from(users).where(eq(users.openId, input.appUserId)).limit(1))[0];
+  if (!user) return { updated: false as const, reason: "unknown_app_user" as const };
+  const now = new Date();
+  await db.insert(billingAccounts).values({ userId: user.id, revenueCatAppUserId: input.appUserId, revenueCatEntitlement: input.entitlement, revenueCatExpiresAt: input.expiresAt, revenueCatUpdatedAt: now }).onDuplicateKeyUpdate({ set: { revenueCatAppUserId: input.appUserId, revenueCatEntitlement: input.entitlement, revenueCatExpiresAt: input.expiresAt, revenueCatUpdatedAt: now } });
+  return { updated: true as const, userId: user.id };
+}
+
+export async function getRevenueCatBillingForUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  return (await db.select().from(billingAccounts).where(eq(billingAccounts.userId, userId)).limit(1))[0] ?? null;
 }

@@ -1,10 +1,11 @@
 import DashboardLayout from "@/components/DashboardLayout";
+import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { ArrowRight, CheckCircle2, LockKeyhole, Store } from "lucide-react";
 import { useLocation } from "wouter";
 
 const lockedCapabilities = [
-  ["Evidence-backed Opportunity Engine", "Available after a 14-day trial or subscription begins."],
+  ["Evidence-backed Opportunity Engine", "Available with a paid Cresna plan after the limited free workspace."],
   ["Custom AI Action Studio", "Creates merchant-reviewed drafts only after paid access starts."],
   ["Impact measurement", "Measures confirmed actions against real connected-store data."],
 ];
@@ -30,11 +31,11 @@ export default function UnpaidPreview() {
             </div>
             <span className="rounded-full border border-[#b97057]/30 bg-[#fff1eb] px-3 py-1.5 text-[10px] font-bold text-[#9a4c37]">Unpaid preview</span>
           </div>
-          <p className="mt-4 max-w-xl text-sm leading-6 text-[#53605a]">{verifiedNoAccess ? "The server confirms this preview has no paid, trial, or beta access. AI recommendations, drafts, and outcome measurement remain unavailable until the seller starts the advertised 14-day full-access trial or subscribes." : error ? "Cresna could not verify the preview gate right now. No merchant data is displayed in this view." : "Cresna is confirming the no-plan gate. No merchant data is displayed in this view."}</p>
+          <p className="mt-4 max-w-xl text-sm leading-6 text-[#53605a]">{verifiedNoAccess ? "The server confirms this preview has no paid or beta access. AI recommendations, drafts, and outcome measurement remain unavailable until the seller chooses an available paid Cresna plan." : error ? "Cresna could not verify the preview gate right now. No merchant data is displayed in this view." : "Cresna is confirming the no-plan gate. No merchant data is displayed in this view."}</p>
           <div className="mt-7 rounded-2xl border border-dashed border-[#17201e]/18 bg-[#f5f5f1] p-5">
             <div className="flex gap-3"><Store className="mt-0.5 h-5 w-5 shrink-0 text-[#7c9b1e]" /><div><p className="text-sm font-bold text-[#17201e]">No Shopify store connected</p><p className="mt-1 text-xs leading-5 text-[#65706b]">Growth Score, scan findings, and opportunity evidence intentionally stay empty until a seller chooses to connect their own store and completes a real sync.</p></div></div>
           </div>
-          <button type="button" onClick={() => setLocation("/app/billing")} className="mt-7 inline-flex h-11 items-center gap-2 rounded-full bg-[#17201e] px-5 text-xs font-bold text-[#f8f7f2] transition-colors hover:bg-[#293630]">View trial and plan choices <ArrowRight className="h-4 w-4" /></button>
+          <Button type="button" onClick={() => setLocation("/app/billing")} className="mt-7 h-11 rounded-full px-5 text-xs font-bold">View plan choices <ArrowRight className="ml-2 h-4 w-4" /></Button>
         </section>
 
         <section className="rounded-[1.4rem] border border-[#17201e]/12 bg-[#eceee8] p-6 sm:p-7">
