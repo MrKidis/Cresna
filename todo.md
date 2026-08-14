@@ -98,4 +98,5 @@
 - [ ] Plan a production authentication migration with Google and Microsoft OAuth buttons, no password email sign-up, and a server-side session/API implementation suitable for the non-Manus deployment.
 - [x] Document a durable AI architecture that protects user data, uses server-side tools and controlled memory, and does not claim GitHub Pages can host a persistent AI service on its own.
 - [ ] Configure and document a unified GitHub-to-Vercel deployment in which one Vercel domain serves Cresna’s frontend, secure API routes, OAuth callbacks, Stripe/RevenueCat webhooks, database access, and server-side AI.
+- [ ] Repair Cresna’s Vercel function routing so `/api` endpoints are deployed and verified before entering production secrets or registering external webhooks.
 - [x] Provide a production activation checklist for an externally hosted database, Google OAuth, Microsoft OAuth, Stripe/RevenueCat credentials, and a server-side AI provider, with secret values entered only through Vercel settings.

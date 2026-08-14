@@ -17,6 +17,11 @@ import { createContext } from "./context";
 export function createCresnaApp() {
   const app = express();
 
+  app.get("/api/health", (_req, res) => {
+    res.set("cache-control", "no-store");
+    return res.status(200).json({ service: "cresna-api", status: "ok" });
+  });
+
   app.post("/api/stripe/webhook", express.raw({ type: "application/json" }), async (req, res) => {
     try {
       const event = verifyStripeEvent(req.body, req.get("stripe-signature") || undefined);
