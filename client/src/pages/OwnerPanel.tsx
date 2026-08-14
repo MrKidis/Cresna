@@ -1,5 +1,7 @@
 import { AIChatBox, type Message } from "@/components/AIChatBox";
 import { EmptyWorkspaceCard, WorkspaceFrame } from "@/components/WorkspaceFrame";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
 import { Bot, Loader2, ShieldCheck } from "lucide-react";
 import { useState } from "react";
@@ -80,7 +82,7 @@ export default function OwnerPanel() {
       description="Only the configured owner identity can open this space. Every platform metric and AI response is aggregate-only; it does not surface individual merchant, customer, catalog, or payment information."
     >
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {metricCards.map(([label, value]) => <section key={String(label)} className="rounded-[1.2rem] border border-[#17201e]/12 bg-[#fdfdfb] p-5"><p className="eyebrow text-[10px] text-[#65706b]">{label}</p><p className="mt-3 text-3xl font-extrabold tracking-[-0.06em] text-[#17201e]">{value}</p></section>)}
+        {metricCards.map(([label, value]) => <section key={String(label)} className="rounded-[1.2rem] border border-border bg-card p-5 text-card-foreground"><p className="eyebrow text-[10px] text-muted-foreground">{label}</p><p className="mt-3 text-3xl font-extrabold tracking-[-0.06em]">{value}</p></section>)}
       </div>
       <p className="mt-3 text-xs leading-5 text-[#65706b]">{data?.billingSummary.isConfigured ? data.billingSummary.syncError || `Stripe aggregates: ${data.billingSummary.proSubscriptions} Pro, ${data.billingSummary.growthSubscriptions} Growth, and ${data.billingSummary.unmappedSubscriptions} subscription${data.billingSummary.unmappedSubscriptions === 1 ? "" : "s"} awaiting a plan mapping.` : "Stripe has not been configured yet, so paid and trial aggregates will remain at zero."}</p>
 
@@ -97,7 +99,7 @@ export default function OwnerPanel() {
             onSendMessage={sendOwnerQuestion}
             isLoading={assistant.isPending}
             height="370px"
-            className="border-white/10 bg-[#fdfdfb] text-[#17201e]"
+            className="border-white/10 bg-card text-card-foreground"
             placeholder="Ask about activation, adoption, or outcome signals…"
             emptyStateMessage="Ask a question about the aggregate Cresna platform snapshot."
             suggestedPrompts={suggestedQuestions}
@@ -113,8 +115,8 @@ export default function OwnerPanel() {
           <p className="mt-3 text-sm leading-6 text-[#d9e1dc]">Each accepted invitation activates seven days of full access. Cresna never generates testimonials or reviews from beta feedback. Invitations send from the owner’s configured Gmail address and are not treated as delivered until Gmail reports success.</p>
           <form className="mt-6 space-y-3" onSubmit={event => { event.preventDefault(); invite.mutate({ email }); }}>
             <label className="sr-only" htmlFor="owner-beta-email">Beta tester email</label>
-            <input id="owner-beta-email" type="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="tester@brand.com" className="h-11 w-full rounded-xl border border-white/15 bg-white/10 px-4 text-sm text-white placeholder:text-[#b6c1bb] focus:outline-none focus:ring-2 focus:ring-[#d9fa55]" />
-            <button type="submit" disabled={invite.isPending} className="h-11 w-full rounded-full bg-[#d9fa55] text-xs font-bold text-[#17201e] hover:bg-[#e4ff83] disabled:opacity-60">{invite.isPending ? "Creating invitation…" : "Create 7-day beta invitation"}</button>
+            <Input id="owner-beta-email" type="email" required value={email} onChange={event => setEmail(event.target.value)} placeholder="tester@brand.com" className="h-11 border-white/15 bg-white/10 text-white placeholder:text-[#b6c1bb] focus-visible:ring-accent" />
+            <Button type="submit" disabled={invite.isPending} className="h-11 w-full rounded-full bg-accent text-accent-foreground hover:bg-accent/90">{invite.isPending ? "Creating invitation…" : "Create 7-day beta invitation"}</Button>
           </form>
         </section>
 
