@@ -64,7 +64,7 @@ export default function DashboardLayout({
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#f5f5f1]">
+      <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
         <div className="flex flex-col items-center gap-8 p-8 max-w-md w-full">
           <div className="flex flex-col items-center gap-6">
             <h1 className="text-2xl font-extrabold tracking-[-0.04em] text-center">
@@ -77,7 +77,7 @@ export default function DashboardLayout({
           <Button
             onClick={() => startLogin()}
             size="lg"
-            className="w-full rounded-full bg-[#17201e] shadow-none hover:bg-[#293630]"
+            className="w-full rounded-full bg-primary text-primary-foreground shadow-none hover:bg-primary/90"
           >
             Sign in
           </Button>
@@ -165,7 +165,7 @@ function DashboardLayoutContent({
       <div className="relative" ref={sidebarRef}>
         <Sidebar
           collapsible="icon"
-          className="border-r border-[#17201e]/10 bg-[#eceee8]"
+          className="border-r border-sidebar-border bg-sidebar text-sidebar-foreground"
           disableTransition={isResizing}
         >
           <SidebarHeader className="h-[72px] justify-center">
@@ -179,8 +179,8 @@ function DashboardLayoutContent({
               </button>
               {!isCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="grid h-7 w-7 place-items-center overflow-hidden rounded-[8px] bg-[#17201e]"><img src="/manus-storage/cresna-signal-mark_1d3ba7b0.png" alt="Cresna" className="h-full w-full object-contain p-0.5" /></span>
-                  <span className="font-extrabold tracking-[-0.04em] truncate text-[#17201e]">cresna</span>
+                  <span className="grid h-7 w-7 place-items-center overflow-hidden rounded-[8px] bg-primary"><img src="/manus-storage/cresna-growth-arrow-logo_f6234d79.png" alt="Cresna growth arrow" className="h-full w-full object-contain p-0.5" /></span>
+                  <span className="font-extrabold tracking-[-0.04em] truncate text-sidebar-foreground">cresna</span>
                 </div>
               ) : null}
             </div>
@@ -196,7 +196,7 @@ function DashboardLayoutContent({
                       isActive={isActive}
                       onClick={() => setLocation(routedPath(item.path))}
                       tooltip={item.label}
-                      className={`h-11 rounded-xl px-3 transition-all font-semibold text-[13px] ${isActive ? "bg-[#fdfdfb] text-[#17201e] shadow-sm" : "text-[#58635e] hover:bg-[#fdfdfb]/70 hover:text-[#17201e]"}`}
+                      className={`h-11 rounded-xl px-3 transition-all font-semibold text-[13px] ${isActive ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm" : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}
                     >
                       <item.icon
                         className={`h-4 w-4 ${isActive ? "text-primary" : ""}`}
@@ -217,7 +217,7 @@ function DashboardLayoutContent({
                     isActive={location === "/app/owner-panel" || location === "/app/founder"}
                     onClick={() => setLocation("/app/owner-panel")}
                     tooltip="Owner Panel"
-                    className={`h-11 rounded-xl px-3 transition-all font-semibold text-[13px] ${location === "/app/owner-panel" || location === "/app/founder" ? "bg-[#17201e] text-[#d9fa55] shadow-sm hover:bg-[#293630] hover:text-[#d9fa55]" : "text-[#58635e] hover:bg-[#fdfdfb]/70 hover:text-[#17201e]"}`}
+                    className={`h-11 rounded-xl px-3 transition-all font-semibold text-[13px] ${location === "/app/owner-panel" || location === "/app/founder" ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}
                   >
                     <Crown className="h-4 w-4" />
                     <span>Owner Panel</span>
@@ -233,11 +233,11 @@ function DashboardLayoutContent({
                 { icon: CreditCard, label: "Billing", path: "/app/billing" },
                 { icon: Sparkles, label: "Founding Beta", path: "/app/beta" },
                 { icon: Settings, label: "Settings", path: "/app/settings" },
-              ].map(item => <SidebarMenuItem key={item.path}><SidebarMenuButton isActive={location === routedPath(item.path)} onClick={() => setLocation(routedPath(item.path))} tooltip={item.label} className={`h-11 rounded-xl px-3 transition-all font-semibold text-[13px] ${location === routedPath(item.path) ? "bg-[#fdfdfb] text-[#17201e] shadow-sm" : "text-[#58635e] hover:bg-[#fdfdfb]/70 hover:text-[#17201e]"}`}><item.icon className="h-4 w-4" /><span>{item.label}</span></SidebarMenuButton></SidebarMenuItem>)}
+              ].map(item => <SidebarMenuItem key={item.path}><SidebarMenuButton isActive={location === routedPath(item.path)} onClick={() => setLocation(routedPath(item.path))} tooltip={item.label} className={`h-11 rounded-xl px-3 transition-all font-semibold text-[13px] ${location === routedPath(item.path) ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm" : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}><item.icon className="h-4 w-4" /><span>{item.label}</span></SidebarMenuButton></SidebarMenuItem>)}
             </SidebarMenu>
           </SidebarContent>
 
-          <SidebarFooter className="m-3 rounded-xl border border-[#17201e]/10 bg-[#fdfdfb] p-2">
+          <SidebarFooter className="m-3 rounded-xl border border-sidebar-border bg-sidebar-accent p-2">
             <div className="mb-2 flex justify-end px-1 group-data-[collapsible=icon]:justify-center"><ThemeToggle /></div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -279,9 +279,9 @@ function DashboardLayoutContent({
         />
       </div>
 
-      <SidebarInset className="bg-[#f5f5f1]">
+        <SidebarInset className="bg-background text-foreground">
         {isMobile && (
-          <div className="flex border-b border-[#17201e]/10 h-14 items-center justify-between bg-[#f5f5f1]/95 px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
+          <div className="flex border-b border-border h-14 items-center justify-between bg-background/95 px-2 backdrop-blur supports-[backdrop-filter]:backdrop-blur sticky top-0 z-40">
             <div className="flex items-center gap-2">
               <SidebarTrigger className="h-9 w-9 rounded-lg bg-background" />
               <div className="flex items-center gap-3">

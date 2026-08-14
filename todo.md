@@ -56,6 +56,8 @@
 - [x] Increase the paid AI-action capacity, make all plan limits explicit, and retain unrestricted owner access.
 - [x] Add a real beta-invitation email delivery path with a verified sender configuration, publish-ready link, delivery state, and safe failure handling.
 - [x] Configure a small-beta Gmail sender with an owner-authorized app password, transparent delivery state, and no credentials in source code.
+- [x] Replace Cresna’s current application mark with the user-supplied green growth-arrow logo in public and authenticated navigation.
+- [ ] Standardize the main interactive controls on the existing production UI component system and eliminate white/low-contrast active, focus, hover, and disabled states in both themes.
 - [ ] Replace remaining dark-mode white-on-light and low-contrast surfaces with accessible semantic components and verify the main live workspace in both themes.
 - [x] Ensure the live app never substitutes the owner identity for a new user and that normal users receive only their intended trial or invitation-based access.
 - [x] Make emailed beta invitations grant the invited email seven days of full beta access only after sign-in with that exact email, with no simulated entitlement state.

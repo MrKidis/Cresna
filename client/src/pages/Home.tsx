@@ -31,7 +31,7 @@ export default function Home() {
       <header className="relative z-20 border-b border-border bg-background/90 backdrop-blur-md">
         <div className="container flex h-[72px] items-center justify-between">
           <button onClick={() => setLocation("/")} className="flex items-center gap-3 text-left" aria-label="Cresna home">
-                <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-[10px] bg-[#17201e]"><img src="/manus-storage/cresna-signal-mark_1d3ba7b0.png" alt="Cresna" className="h-full w-full object-contain p-0.5" /></span>
+                <span className="grid h-8 w-8 place-items-center overflow-hidden rounded-[10px] bg-[#17201e]"><img src="/manus-storage/cresna-growth-arrow-logo_f6234d79.png" alt="Cresna growth arrow" className="h-full w-full object-contain p-0.5" /></span>
                 <span className="text-[15px] font-extrabold tracking-[-0.04em] text-foreground">cresna</span>
           </button>
           <nav className="hidden items-center gap-8 text-[13px] font-semibold text-muted-foreground md:flex">
