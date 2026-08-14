@@ -1,0 +1,1 @@
+ALTER TABLE `users` ADD `workspaceName` varchar(120);

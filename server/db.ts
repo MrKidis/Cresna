@@ -1,7 +1,22 @@
-import { eq } from "drizzle-orm";
+import { and, desc, eq, gt } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import {
+  InsertUser,
+  billingAccounts,
+  betaFeatureOverrides,
+  betaFeedback,
+  foundingBetaInvites,
+  merchantGrowthProfiles,
+  productDailyMetrics,
+  recommendationActions,
+  recommendations,
+  shopifyOauthStates,
+  storeDailyMetrics,
+  stores,
+  users,
+} from "../drizzle/schema";
 import { ENV } from './_core/env';
+import { BetaFeedbackInput, toBetaFeedbackPersistenceValues } from "./betaFeedback";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -89,4 +104,228 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+export async function getWorkspaceProfile(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  return (await db.select().from(users).where(eq(users.id, userId)).limit(1))[0];
+}
+
+export async function updateWorkspaceName(userId: number, workspaceName: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.update(users).set({ workspaceName: workspaceName || null }).where(eq(users.id, userId));
+  return getWorkspaceProfile(userId);
+}
+
+export async function getGrowthProfile(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  return (await db.select().from(merchantGrowthProfiles).where(eq(merchantGrowthProfiles.userId, userId)).limit(1))[0];
+}
+
+export async function updateGrowthProfile(input: {
+  userId: number;
+  goals: string[];
+  brandSummary?: string | null;
+  targetCustomer?: string | null;
+  brandVoice?: string | null;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const values = {
+    userId: input.userId,
+    goalsJson: JSON.stringify(Array.from(new Set(input.goals))),
+    brandSummary: input.brandSummary?.trim() || null,
+    targetCustomer: input.targetCustomer?.trim() || null,
+    brandVoice: input.brandVoice?.trim() || null,
+  };
+  await db.insert(merchantGrowthProfiles).values(values).onDuplicateKeyUpdate({
+    set: {
+      goalsJson: values.goalsJson,
+      brandSummary: values.brandSummary,
+      targetCustomer: values.targetCustomer,
+      brandVoice: values.brandVoice,
+    },
+  });
+  return getGrowthProfile(input.userId);
+}
+
+export async function setGrowthProfileScanStatus(userId: number, scanStatus: "not_started" | "ready" | "needs_more_data") {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const existing = await getGrowthProfile(userId);
+  if (!existing) {
+    await db.insert(merchantGrowthProfiles).values({ userId, goalsJson: "[]", scanStatus, lastScannedAt: new Date() });
+  } else {
+    await db.update(merchantGrowthProfiles).set({ scanStatus, lastScannedAt: new Date() }).where(eq(merchantGrowthProfiles.userId, userId));
+  }
+}
+
+export async function activateEligibleBetaForUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const user = await getWorkspaceProfile(userId);
+  if (!user?.email) return null;
+  const invite = (await db.select().from(foundingBetaInvites).where(eq(foundingBetaInvites.email, user.email.toLowerCase())).limit(1))[0];
+  if (!invite || invite.status === "revoked") return null;
+  const now = new Date();
+  if (invite.status === "active" && invite.expiresAt && invite.expiresAt <= now) {
+    await db.update(foundingBetaInvites).set({ status: "expired" }).where(eq(foundingBetaInvites.id, invite.id));
+    return null;
+  }
+  if (invite.status === "expired") return null;
+  if (invite.status === "invited") {
+    const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    await db.update(foundingBetaInvites).set({ status: "active", activatedUserId: userId, activatedAt: now, expiresAt }).where(eq(foundingBetaInvites.id, invite.id));
+    return { ...invite, status: "active" as const, activatedUserId: userId, activatedAt: now, expiresAt };
+  }
+  return invite;
+}
+
+export async function getBetaInviteForUser(userId: number) {
+  return activateEligibleBetaForUser(userId);
+}
+
+export async function createFoundingBetaInvite(ownerUserId: number, email: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const normalizedEmail = email.trim().toLowerCase();
+  await db.insert(foundingBetaInvites).values({ email: normalizedEmail, invitedByUserId: ownerUserId }).onDuplicateKeyUpdate({
+    set: { status: "invited", activatedUserId: null, activatedAt: null, expiresAt: null },
+  });
+  return (await db.select().from(foundingBetaInvites).where(eq(foundingBetaInvites.email, normalizedEmail)).limit(1))[0];
+}
+
+export async function listFoundingBetaInvites() {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  return db.select().from(foundingBetaInvites).orderBy(desc(foundingBetaInvites.createdAt));
+}
+
+export async function setBetaFeatureOverride(betaInviteId: number, featureKey: string, enabled: boolean) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.insert(betaFeatureOverrides).values({ betaInviteId, featureKey, enabled: enabled ? 1 : 0 }).onDuplicateKeyUpdate({ set: { enabled: enabled ? 1 : 0 } });
+}
+
+export async function getBetaFeatureOverrides(betaInviteId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  return db.select().from(betaFeatureOverrides).where(eq(betaFeatureOverrides.betaInviteId, betaInviteId));
+}
+
+export async function isBetaFeatureEnabledForUser(userId: number, featureKey: string) {
+  const invite = await activateEligibleBetaForUser(userId);
+  if (!invite || invite.status !== "active") return true;
+  const overrides = await getBetaFeatureOverrides(invite.id);
+  const override = overrides.find(item => item.featureKey === featureKey);
+  return override ? override.enabled === 1 : true;
+}
+
+export async function saveBetaFeedback(input: BetaFeedbackInput & { userId: number }) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const invite = await activateEligibleBetaForUser(input.userId);
+  if (!invite || invite.status !== "active") throw new Error("An active Founding Beta invitation is required to submit feedback");
+  const values = toBetaFeedbackPersistenceValues(input, invite.id);
+  await db.insert(betaFeedback).values(values).onDuplicateKeyUpdate({ set: { growthProfileRating: values.growthProfileRating, mostUsefulRecommendation: values.mostUsefulRecommendation, willingnessToPay: values.willingnessToPay, feedbackText: values.feedbackText } });
+  return invite;
+}
+
+export async function listBetaFeedback() {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  return db.select().from(betaFeedback).orderBy(desc(betaFeedback.createdAt));
+}
+
+export async function getBetaFeedbackForUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const invite = await activateEligibleBetaForUser(userId);
+  if (!invite) return { invite: null, feedback: [] };
+  const feedback = await db.select().from(betaFeedback).where(eq(betaFeedback.betaInviteId, invite.id)).orderBy(desc(betaFeedback.createdAt));
+  return { invite, feedback };
+}
+
+export async function getOwnerOverview() {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const [allUsers, allStores, invites, feedback] = await Promise.all([
+    db.select({ id: users.id }).from(users),
+    db.select({ id: stores.id, connectionStatus: stores.connectionStatus }).from(stores),
+    db.select().from(foundingBetaInvites).orderBy(desc(foundingBetaInvites.createdAt)),
+    db.select().from(betaFeedback).orderBy(desc(betaFeedback.createdAt)),
+  ]);
+  const betaInvites = await Promise.all(invites.map(async invite => ({ ...invite, featureOverrides: await getBetaFeatureOverrides(invite.id) })));
+  return {
+    totalUsers: allUsers.length,
+    connectedStores: allStores.filter(store => store.connectionStatus === "connected").length,
+    betaInvites,
+    betaFeedback: feedback,
+  };
+}
+
+export async function getPrimaryStoreForUser(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  return (await db.select().from(stores).where(eq(stores.userId, userId)).limit(1))[0];
+}
+
+export async function getAnalyticsOverview(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const store = await getPrimaryStoreForUser(userId);
+  if (!store) return { store: null, dailyMetrics: [], productMetrics: [] };
+
+  const [dailyMetrics, productMetrics] = await Promise.all([
+    db.select().from(storeDailyMetrics).where(eq(storeDailyMetrics.storeId, store.id)).orderBy(desc(storeDailyMetrics.metricDate)).limit(60),
+    db.select().from(productDailyMetrics).where(eq(productDailyMetrics.storeId, store.id)).orderBy(desc(productDailyMetrics.metricDate)).limit(200),
+  ]);
+
+  return { store, dailyMetrics: dailyMetrics.reverse(), productMetrics };
+}
+
+export async function getRecommendationsForUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const store = await getPrimaryStoreForUser(userId);
+  if (!store) return [];
+  return db.select().from(recommendations).where(eq(recommendations.storeId, store.id)).orderBy(recommendations.priorityRank);
+}
+
+export async function getRecommendationActionsForUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const store = await getPrimaryStoreForUser(userId);
+  if (!store) return [];
+  const rows = await db
+    .select({ action: recommendationActions, recommendation: recommendations })
+    .from(recommendationActions)
+    .innerJoin(recommendations, eq(recommendationActions.recommendationId, recommendations.id))
+    .where(eq(recommendations.storeId, store.id))
+    .orderBy(desc(recommendationActions.actedAt));
+  return rows;
+}
+
+export async function createShopifyOAuthState(userId: number, shopDomain: string, stateHash: string, expiresAt: Date) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db.insert(shopifyOauthStates).values({ userId, shopDomain, stateHash, expiresAt });
+}
+
+export async function consumeShopifyOAuthState(stateHash: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const state = (await db.select().from(shopifyOauthStates).where(and(eq(shopifyOauthStates.stateHash, stateHash), gt(shopifyOauthStates.expiresAt, new Date()))).limit(1))[0];
+  if (state) await db.delete(shopifyOauthStates).where(eq(shopifyOauthStates.id, state.id));
+  return state;
+}
+
+export async function updateStripeReferences(userId: number, customerId?: string | null, subscriptionId?: string | null) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  if (customerId) await db.update(users).set({ stripeCustomerId: customerId }).where(eq(users.id, userId));
+  if (subscriptionId !== undefined) {
+    await db.insert(billingAccounts).values({ userId, stripeSubscriptionId: subscriptionId || null }).onDuplicateKeyUpdate({ set: { stripeSubscriptionId: subscriptionId || null } });
+  }
+}

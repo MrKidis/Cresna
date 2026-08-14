@@ -1,0 +1,33 @@
+# Project TODO
+
+- [x] Establish the premium visual system: typography, color tokens, spacing, responsive behavior, focus states, and motion preferences.
+- [x] Build a public landing page with the Merchant Momentum value proposition, feature framing, pricing tiers, annual/monthly presentation, and signup calls to action.
+- [x] Implement account entry points, authenticated account context, profile controls, and clear sign-in/sign-out states.
+- [x] Define a schema for connected Shopify stores, store metrics, products, revenue recommendations, recommendation actions, and Stripe identifiers.
+- [x] Build a guided Shopify store connection screen that clearly declares read scopes for orders, products, and customers and supports a secure OAuth callback path.
+- [x] Implement the authenticated sales health dashboard with revenue trends, product performance, and a conversion-funnel overview sourced from connected-store data.
+- [x] Implement the AI profit leak detector for underperforming SKUs, high-refund products, abandoned-cart patterns, and margin-erosion signals.
+- [x] Implement a ranked action feed that explains each recommendation, its rationale, owner action, confidence, and estimated revenue impact.
+- [x] Implement recommendation completion and revenue-impact tracking with an explicit before-and-after measurement period.
+- [x] Configure server-side AI analysis using structured, evidence-based outputs and clear limitations when source data is unavailable.
+- [x] Integrate Stripe Checkout for monthly and annual subscriptions, a free-trial configuration, plan-based feature access, and verified webhook handling.
+- [x] Add an account billing view that links sellers to payment management and shows their current plan status without storing sensitive payment data.
+- [x] Add deterministic test coverage for access gating, health-score calculations, recommendation ranking, and Stripe checkout configuration.
+- [x] Verify desktop and mobile layouts, accessibility basics, type safety, test suite, and production build.
+- [x] Implement and verify explicit login and signed-out entry points, plus clear signed-in and sign-out states.
+- [x] Enhance billing to display the current Stripe plan, interval, status, and trial or renewal end without storing sensitive payment fields.
+- [x] Add deterministic tests for billing access gating, recommendation priority order, and Checkout session configuration.
+- [x] Verify and document keyboard navigation, visible focus, semantic labels, and form control accessibility.
+- [x] Reposition the product around a persistent Growth Profile, real store scan, ranked Opportunity Engine, merchant approval, and outcome measurement.
+- [x] Define and apply a distinct product name that is not Margin Pilot, with a premium logo and coherent visual identity.
+- [x] Add goal selection for small and midsize merchants, including sales, customer growth, brand awareness, SEO, competitor, and store-improvement priorities.
+- [x] Add a Growth Profile workspace that explains what was scanned, what was found, and which insights require more data rather than inventing scores.
+- [x] Add opportunity recommendations with clear what, why, estimated impact, effort, source evidence, and a merchant approval step before any generated change.
+- [x] Add a source-backed “What Cresna found” section to the Growth Profile, with an honest empty state when no opportunities exist.
+- [x] Finalize the Cresna product-name decision for this build and audit the application’s user-facing identity references.
+- [x] Run and document a working project-wide search for prior product-name references before final delivery.
+- [x] Add an owner-only console with free owner access and an explicit Founder Mode for controlled beta feature access.
+- [x] Add invite-only Founding Beta enrollment with seven-day access and structured day-one, day-three, and day-seven feedback prompts.
+- [x] Update pricing to two subscription plans with a full-access 14-day trial: Pro at $29/month and Growth at $79/month.
+- [x] Implement checkpoint-specific Founding Beta feedback, including day-seven willingness-to-pay options, and test its structured persistence contract.
+- [x] Add a deterministic persistence-contract test for day-seven Founding Beta feedback fields.
