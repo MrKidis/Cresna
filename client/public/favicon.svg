@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Cresna growth arrow">
+  <rect width="64" height="64" rx="16" fill="#17201e"/>
+  <path d="M15 43 28 30l8 8 14-17" fill="none" stroke="#d9fa55" stroke-linecap="round" stroke-linejoin="round" stroke-width="7"/>
+  <path d="M41 21h9v9" fill="none" stroke="#d9fa55" stroke-linecap="round" stroke-linejoin="round" stroke-width="7"/>
+</svg>

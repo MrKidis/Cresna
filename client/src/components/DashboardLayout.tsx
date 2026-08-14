@@ -122,6 +122,10 @@ function DashboardLayoutContent({
   const isMobile = useIsMobile();
   const { data: ownerAccess } = trpc.owner.access.useQuery(undefined, { enabled: Boolean(user) });
   const isOwner = ownerAccess?.isOwner === true;
+  const navigateTo = (path: string) => {
+    if (path !== location) setLocation(path);
+    if (isMobile) toggleSidebar();
+  };
 
   useEffect(() => {
     if (isCollapsed) {
@@ -181,16 +185,17 @@ function DashboardLayoutContent({
             </div>
           </SidebarHeader>
 
-          <SidebarContent className="gap-0 overflow-y-auto">
-            {isOwner && !isUnpaidPreview ? <>
+          <SidebarContent className="gap-0 overflow-y-auto overscroll-contain">
+            {isOwner && !isUnpaidPreview ? <section className="border-b border-sidebar-border/70 pb-3">
               <div className="px-5 pb-1 group-data-[collapsible=icon]:hidden">
                 <p className="eyebrow text-[9px] font-medium text-[#7a847e]">Owner workspace</p>
               </div>
               <SidebarMenu className="px-3 py-2">
                 <SidebarMenuItem>
                   <SidebarMenuButton
+                    type="button"
                     isActive={location === "/app/owner-panel" || location === "/app/founder"}
-                    onClick={() => setLocation("/app/owner-panel")}
+                    onClick={() => navigateTo("/app/owner-panel")}
                     tooltip="Owner Panel"
                     className={`h-11 rounded-xl px-3 transition-all font-semibold text-[13px] ${location === "/app/owner-panel" || location === "/app/founder" ? "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90" : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}
                   >
@@ -199,9 +204,9 @@ function DashboardLayoutContent({
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </SidebarMenu>
-            </> : null}
-            {menuGroups.map((group, groupIndex) => <div key={group.label} className={(groupIndex || isOwner) ? "pt-3" : ""}><div className="px-5 pb-1 group-data-[collapsible=icon]:hidden"><p className="eyebrow text-[9px] font-medium text-[#7a847e]">{group.label}</p></div><SidebarMenu className="px-3 py-1">{group.items.map(item => { const isActive = location === routedPath(item.path); return <SidebarMenuItem key={item.path}><SidebarMenuButton isActive={isActive} onClick={() => setLocation(routedPath(item.path))} tooltip={item.label} className={`h-10 rounded-xl px-3 transition-all font-semibold text-[13px] ${isActive ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm" : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}><item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} /><span>{item.label}</span></SidebarMenuButton></SidebarMenuItem>; })}</SidebarMenu></div>)}
-            <div className="px-5 pt-5 group-data-[collapsible=icon]:hidden">
+            </section> : null}
+            {menuGroups.map((group, groupIndex) => <section key={group.label} className={(groupIndex || isOwner) ? "mt-3 border-t border-sidebar-border/70 pt-4" : "pt-2"}><div className="px-5 pb-1 group-data-[collapsible=icon]:hidden"><p className="eyebrow text-[9px] font-medium text-[#7a847e]">{group.label}</p></div><SidebarMenu className="px-3 py-1">{group.items.map(item => { const isActive = location === routedPath(item.path); return <SidebarMenuItem key={item.path}><SidebarMenuButton type="button" isActive={isActive} onClick={() => navigateTo(routedPath(item.path))} tooltip={item.label} className={`h-10 rounded-xl px-3 transition-all font-semibold text-[13px] ${isActive ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm" : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}><item.icon className={`h-4 w-4 ${isActive ? "text-primary" : ""}`} /><span>{item.label}</span></SidebarMenuButton></SidebarMenuItem>; })}</SidebarMenu></section>)}
+            <div className="mt-3 border-t border-sidebar-border/70 px-5 pt-4 group-data-[collapsible=icon]:hidden">
               <p className="eyebrow text-[9px] font-medium text-[#7a847e]">Account</p>
             </div>
             <SidebarMenu className="px-3 py-2">
@@ -209,7 +214,7 @@ function DashboardLayoutContent({
                 { icon: CreditCard, label: "Billing", path: "/app/billing" },
                 { icon: Sparkles, label: "Founding Beta", path: "/app/beta" },
                 { icon: Settings, label: "Settings", path: "/app/settings" },
-              ].map(item => <SidebarMenuItem key={item.path}><SidebarMenuButton isActive={location === routedPath(item.path)} onClick={() => setLocation(routedPath(item.path))} tooltip={item.label} className={`h-11 rounded-xl px-3 transition-all font-semibold text-[13px] ${location === routedPath(item.path) ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm" : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}><item.icon className="h-4 w-4" /><span>{item.label}</span></SidebarMenuButton></SidebarMenuItem>)}
+              ].map(item => <SidebarMenuItem key={item.path}><SidebarMenuButton type="button" isActive={location === routedPath(item.path)} onClick={() => navigateTo(routedPath(item.path))} tooltip={item.label} className={`h-11 rounded-xl px-3 transition-all font-semibold text-[13px] ${location === routedPath(item.path) ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-sm" : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"}`}><item.icon className="h-4 w-4" /><span>{item.label}</span></SidebarMenuButton></SidebarMenuItem>)}
             </SidebarMenu>
           </SidebarContent>
 

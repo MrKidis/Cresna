@@ -72,7 +72,7 @@
 - [x] Expand Settings with account identity, workspace preferences, persisted notification choices, connected-store controls, data-permission explanations, and tutorial replay while keeping sensitive billing data out of Cresna.
 - [x] Build a Shopify-inspired dark commerce workspace navigation for Orders, Drafts, Shipping, Products, Customers, Growth, Discounts, Content, Markets, Finance, and Analytics that surfaces only implemented intelligence and labels unavailable integrations honestly.
 - [ ] Expand the connected-store intelligence contract and permission model to produce deeper evidence-backed views for supported order, catalog, customer, pricing, marketing-content, and market signals without fabricating access to Shopify features Cresna does not have.
-- [ ] Complete merchant write-approval readiness with server-side ownership and approval-state coverage, merchant-visible audit history, explicit supported-action permission documentation, and a clear unavailable state until Shopify write scopes and APIs are configured.
+- [x] Complete merchant write-approval readiness with server-side ownership and approval-state coverage, merchant-visible audit history, explicit supported-action permission documentation, and a clear unavailable state until Shopify write scopes and APIs are configured.
 - [x] Apply the documented Shopify navigation principles to Cresna’s workspace information architecture—fewer task groups, clear current location, and dependable return paths—without copying Shopify’s trade dress or overstating Cresna’s capabilities.
 - [x] Supersede closed-beta-only admission with public signup/login, a truthful limited free workspace, a visible paid-plan path, and no automatic free trial for standard users.
 - [x] Change email-bound beta access to a non-reusable two-day entitlement that starts only after the invited email signs in, displays a timer, and requires feedback at expiry before paid-plan continuation.
@@ -91,3 +91,10 @@
 - [x] Enforce beta-expiry final-feedback completion before an expired tester can begin paid checkout, with a server-side checkout guard and a direct user-interface handoff back to the final feedback page.
 - [x] Fix the first-use Growth Profile query so an authenticated workspace with no saved profile receives a stable empty-state contract rather than an undefined query result.
 - [x] Prepare a sanitized GitHub/Vercel handoff package with deployment documentation, environment-variable inventory, Stripe/RevenueCat webhook-path guidance, and no committed secrets.
+- [ ] Audit and prepare a GitHub Pages-compatible Cresna frontend export while retaining a separate secure API deployment for OAuth, Stripe, RevenueCat webhooks, user data, and server-side AI.
+- [ ] Resolve the RevenueCat “Select an offering” draft-state issue by attaching the Cresna paywall only after actual Stripe Web Billing packages are present, and document why this cannot be completed with no connected products.
+- [ ] Correct authenticated workspace navigation overlap, stop unintended tab-navigation scroll resets, and standardize concise icon-led controls across desktop and mobile.
+- [ ] Configure the Cresna growth-arrow mark as the repository and browser favicon with a portable public asset reference.
+- [ ] Plan a production authentication migration with Google and Microsoft OAuth buttons, no password email sign-up, and a server-side session/API implementation suitable for the non-Manus deployment.
+- [ ] Document a durable AI architecture that protects user data, uses server-side tools and controlled memory, and does not claim GitHub Pages can host a persistent AI service on its own.
+- [ ] Configure and document a unified GitHub-to-Vercel deployment in which one Vercel domain serves Cresna’s frontend, secure API routes, OAuth callbacks, Stripe/RevenueCat webhooks, database access, and server-side AI.
