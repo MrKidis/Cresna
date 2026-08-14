@@ -56,3 +56,15 @@
 - [x] Increase the paid AI-action capacity, make all plan limits explicit, and retain unrestricted owner access.
 - [x] Add a real beta-invitation email delivery path with a verified sender configuration, publish-ready link, delivery state, and safe failure handling.
 - [x] Configure a small-beta Gmail sender with an owner-authorized app password, transparent delivery state, and no credentials in source code.
+- [ ] Replace remaining dark-mode white-on-light and low-contrast surfaces with accessible semantic components and verify the main live workspace in both themes.
+- [x] Ensure the live app never substitutes the owner identity for a new user and that normal users receive only their intended trial or invitation-based access.
+- [x] Make emailed beta invitations grant the invited email seven days of full beta access only after sign-in with that exact email, with no simulated entitlement state.
+- [ ] Validate Shopify authorization URLs, callback handling, scopes, and disconnected-store error paths against the configured live integration contract.
+- [ ] Improve both Cresna AI experiences with fast, evidence-bound store intelligence, honest estimated-impact guidance, and clear missing-data limits without claiming unsupported capabilities.
+- [x] Align plan comparison and gating with actual premium capabilities, including Stripe-ready trial/cancellation behavior and documented future RevenueCat integration boundaries.
+- [ ] Replace remaining dark-mode white-on-light and low-contrast surfaces with accessible semantic components and verify the main live workspace in both themes.
+- [x] Ensure the live app never substitutes the owner identity for a new user and that normal users receive only their intended trial or invitation-based access.
+- [x] Make emailed beta invitations grant the invited email seven days of full beta access only after sign-in with that exact email, with no simulated entitlement state.
+- [ ] Validate Shopify authorization URLs, callback handling, scopes, and disconnected-store error paths against the configured live integration contract.
+- [ ] Improve both Cresna AI experiences with fast, evidence-bound store intelligence, honest estimated-impact guidance, and clear missing-data limits without claiming unsupported capabilities.
+- [x] Align plan comparison and gating with actual premium capabilities, including Stripe-ready trial/cancellation behavior and documented future RevenueCat integration boundaries.

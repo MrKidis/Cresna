@@ -18,13 +18,14 @@ function requireShopifyConfig() {
   if (!ENV.shopifyClientId || !ENV.shopifyClientSecret || !ENV.cookieSecret) throw new Error("Shopify OAuth credentials are not configured");
 }
 
-function validateShopDomain(value: string) {
+export function validateShopDomain(value: string) {
   const domain = value.trim().toLowerCase();
   if (!/^[a-z0-9][a-z0-9-]*\.myshopify\.com$/.test(domain)) throw new Error("Enter a valid .myshopify.com domain");
   return domain;
 }
 
 function hashState(state: string) { return createHash("sha256").update(state).digest("hex"); }
+export function buildShopifyAuthorizationUrl(input: { shopDomain: string; clientId: string; origin: string; state: string }) { const url = new URL(`https://${input.shopDomain}/admin/oauth/authorize`); url.searchParams.set("client_id", input.clientId); url.searchParams.set("scope", SHOPIFY_SCOPES.join(",")); url.searchParams.set("redirect_uri", `${input.origin}/api/shopify/callback`); url.searchParams.set("state", input.state); return url.toString(); }
 function getTokenKey() { return createHash("sha256").update(`${ENV.cookieSecret}:shopify-access-token`).digest(); }
 function encryptToken(value: string) { const iv = randomBytes(12); const cipher = createCipheriv("aes-256-gcm", getTokenKey(), iv); const encrypted = Buffer.concat([cipher.update(value, "utf8"), cipher.final()]); return `${iv.toString("base64url")}.${cipher.getAuthTag().toString("base64url")}.${encrypted.toString("base64url")}`; }
 function decryptToken(value: string) { const [iv, tag, encrypted] = value.split("."); if (!iv || !tag || !encrypted) throw new Error("Invalid stored Shopify token"); const decipher = createDecipheriv("aes-256-gcm", getTokenKey(), Buffer.from(iv, "base64url")); decipher.setAuthTag(Buffer.from(tag, "base64url")); return Buffer.concat([decipher.update(Buffer.from(encrypted, "base64url")), decipher.final()]).toString("utf8"); }
@@ -36,18 +37,13 @@ export async function beginShopifyAuthorization(userId: number, inputDomain: str
   const shopDomain = validateShopDomain(inputDomain);
   const state = randomBytes(32).toString("base64url");
   await createShopifyOAuthState(userId, shopDomain, hashState(state), new Date(Date.now() + 10 * 60 * 1000));
-  const url = new URL(`https://${shopDomain}/admin/oauth/authorize`);
-  url.searchParams.set("client_id", ENV.shopifyClientId);
-  url.searchParams.set("scope", SHOPIFY_SCOPES.join(","));
-  url.searchParams.set("redirect_uri", `${origin}/api/shopify/callback`);
-  url.searchParams.set("state", state);
-  return { authorizationUrl: url.toString() };
+  return { authorizationUrl: buildShopifyAuthorizationUrl({ shopDomain, clientId: ENV.shopifyClientId, origin, state }) };
 }
 
-function verifyOAuthCallback(query: Record<string, unknown>) {
+export function verifyOAuthCallback(query: Record<string, unknown>, clientSecret = ENV.shopifyClientSecret) {
   const received = typeof query.hmac === "string" ? query.hmac : "";
   const message = Object.entries(query).filter(([key]) => key !== "hmac" && key !== "signature").sort(([a], [b]) => a.localeCompare(b)).map(([key, value]) => `${key}=${Array.isArray(value) ? value.join(",") : value}`).join("&");
-  const expected = createHmac("sha256", ENV.shopifyClientSecret).update(message).digest("hex");
+  const expected = createHmac("sha256", clientSecret).update(message).digest("hex");
   if (!received || received.length !== expected.length || !timingSafeEqual(Buffer.from(received), Buffer.from(expected))) throw new Error("Invalid Shopify authorization signature");
 }
 

@@ -15,6 +15,23 @@ function parseDraft(value: string): DraftPayload | null {
   }
 }
 
+export function extractStructuredDraftText(content: unknown) {
+  const raw = typeof content === "string"
+    ? content
+    : Array.isArray(content)
+      ? content.map(part => typeof part === "object" && part !== null && "type" in part && (part as { type?: unknown }).type === "text" && "text" in part ? String((part as { text?: unknown }).text || "") : "").join("\n")
+      : "";
+  return raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+}
+
+export function parseStructuredDraft(content: unknown, errorMessage: string) {
+  const text = extractStructuredDraftText(content);
+  if (!text) throw new Error(errorMessage);
+  const draft = parseDraft(text);
+  if (!draft) throw new Error(errorMessage);
+  return draft;
+}
+
 export function buildLinkedDraftMetadata(recommendation?: { id: number; category: string }) {
   if (!recommendation) return { recommendationId: null, eventPayload: {} };
   if (!isDraftCapableRecommendationCategory(recommendation.category)) throw new Error("This opportunity needs an operational merchant action, not a product-content AI draft");
@@ -82,9 +99,7 @@ export async function generateProductDescriptionDraft(input: { userId: number; p
       },
     },
   });
-  const content = result.choices[0]?.message.content;
-  if (typeof content !== "string") throw new Error("Cresna could not create a structured AI draft");
-  const draft = JSON.parse(content) as DraftPayload;
+  const draft = parseStructuredDraft(result.choices[0]?.message.content, "Cresna could not create a structured AI draft");
   const inserted = await db.insert(aiActionDrafts).values({
     storeId: store.id,
     recommendationId: linkedDraft.recommendationId,
@@ -142,9 +157,7 @@ export async function generatePositioningDraft(input: { userId: number }) {
       },
     },
   });
-  const content = result.choices[0]?.message.content;
-  if (typeof content !== "string") throw new Error("Cresna could not create a structured positioning draft");
-  const draft = JSON.parse(content) as DraftPayload;
+  const draft = parseStructuredDraft(result.choices[0]?.message.content, "Cresna could not create a structured positioning draft");
   const inserted = await db.insert(aiActionDrafts).values({ storeId: store.id, actionType: "positioning", originalContent: profile.positioning || "", generatedContent: JSON.stringify(draft), inputEvidenceJson: JSON.stringify(evidence) });
   const draftId = Number(inserted[0].insertId);
   await db.insert(businessBrainEvents).values({ storeId: store.id, eventType: "draft_generated", entityType: "ai_action_draft", entityId: draftId, payloadJson: JSON.stringify({ actionType: "positioning" }) });

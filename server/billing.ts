@@ -88,12 +88,23 @@ export function buildCheckoutSessionConfig(input: {
     customer: input.customerId,
     client_reference_id: String(input.user.id),
     line_items: [{ price: input.priceId, quantity: 1 }],
+    payment_method_collection: "always" as const,
     allow_promotion_codes: true,
-    subscription_data: { trial_period_days: subscriptionPlans[input.planKey].trialDays, metadata: { user_id: String(input.user.id), plan: input.planKey } },
+    subscription_data: {
+      trial_period_days: subscriptionPlans[input.planKey].trialDays,
+      trial_settings: { end_behavior: { missing_payment_method: "cancel" as const } },
+      metadata: { user_id: String(input.user.id), plan: input.planKey },
+    },
     metadata: { user_id: String(input.user.id), customer_email: input.user.email || "", customer_name: input.user.name || "", plan: input.planKey },
     success_url: `${input.origin}/app/billing?checkout=success`,
     cancel_url: `${input.origin}/app/billing?checkout=canceled`,
   };
+}
+
+export function hasLiveStripeAccess(subscription: { status: string; cancel_at_period_end?: boolean } | null | undefined) {
+  if (!subscription) return false;
+  if (subscription.status === "active") return true;
+  return subscription.status === "trialing" && subscription.cancel_at_period_end !== true;
 }
 
 export async function createSubscriptionCheckout(input: { userId: number; origin: string; planKey: SubscriptionPlanKey; interval: BillingInterval }) {
@@ -119,7 +130,7 @@ export async function getBillingAccess(userId: number) {
   if (betaInvite?.status === "active" && betaInvite.expiresAt && betaInvite.expiresAt > new Date()) return { hasAccess: true, accessSource: "beta" as const, subscription: null, plan: "Founding Beta", status: "active", interval: null, currentPeriodEnd: betaInvite.expiresAt };
   if (!user.stripeCustomerId || !ENV.stripeSecretKey) return { hasAccess: false, accessSource: "none" as const, subscription: null, plan: null, status: null, interval: null, currentPeriodEnd: null };
   const subscriptions = await stripe.subscriptions.list({ customer: user.stripeCustomerId, status: "all", limit: 20 });
-  const subscription = subscriptions.data.find(item => item.status === "active" || item.status === "trialing") ?? null;
+  const subscription = subscriptions.data.find(item => hasLiveStripeAccess(item)) ?? null;
   const recurring = subscription?.items.data[0]?.price.recurring;
   const periodEnd = subscription?.items.data[0]?.current_period_end;
   return { hasAccess: Boolean(subscription), accessSource: subscription ? "stripe" as const : "none" as const, subscription, plan: subscription?.metadata.plan || null, status: subscription?.status || null, interval: recurring?.interval || null, currentPeriodEnd: periodEnd ? new Date(periodEnd * 1000) : null };
