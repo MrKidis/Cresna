@@ -50,6 +50,9 @@ export const merchantGrowthProfiles = mysqlTable(
     brandSummary: text("brandSummary"),
     targetCustomer: text("targetCustomer"),
     brandVoice: varchar("brandVoice", { length: 120 }),
+    brandValues: text("brandValues"),
+    positioning: text("positioning"),
+    differentiators: text("differentiators"),
     scanStatus: mysqlEnum("scanStatus", ["not_started", "ready", "needs_more_data"])
       .default("not_started")
       .notNull(),
@@ -169,6 +172,14 @@ export const products = mysqlTable(
     productType: varchar("productType", { length: 255 }),
     status: varchar("status", { length: 64 }).notNull(),
     totalInventory: int("totalInventory"),
+    descriptionHtml: text("descriptionHtml"),
+    seoTitle: varchar("seoTitle", { length: 255 }),
+    seoDescription: text("seoDescription"),
+    mediaCount: int("mediaCount"),
+    priceMin: decimal("priceMin", { precision: 14, scale: 2 }),
+    priceMax: decimal("priceMax", { precision: 14, scale: 2 }),
+    compareAtPriceMin: decimal("compareAtPriceMin", { precision: 14, scale: 2 }),
+    compareAtPriceMax: decimal("compareAtPriceMax", { precision: 14, scale: 2 }),
     updatedAtSource: timestamp("updatedAtSource").notNull(),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -177,6 +188,68 @@ export const products = mysqlTable(
     uniqueIndex("products_store_shopify_product_unique").on(table.storeId, table.shopifyProductId),
     index("products_store_idx").on(table.storeId),
   ]
+);
+
+/** Collection metadata gives the scan a real view of catalog organization and collection-page clarity. */
+export const collections = mysqlTable(
+  "collections",
+  {
+    id: bigint("id", { mode: "number" }).autoincrement().primaryKey(),
+    storeId: bigint("storeId", { mode: "number" })
+      .notNull()
+      .references(() => stores.id, { onDelete: "cascade" }),
+    shopifyCollectionId: varchar("shopifyCollectionId", { length: 64 }).notNull(),
+    title: varchar("title", { length: 512 }).notNull(),
+    handle: varchar("handle", { length: 255 }),
+    descriptionHtml: text("descriptionHtml"),
+    seoTitle: varchar("seoTitle", { length: 255 }),
+    seoDescription: text("seoDescription"),
+    productCount: int("productCount").notNull().default(0),
+    updatedAtSource: timestamp("updatedAtSource").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    uniqueIndex("collections_store_shopify_collection_unique").on(table.storeId, table.shopifyCollectionId),
+    index("collections_store_idx").on(table.storeId),
+  ]
+);
+
+/** A scan snapshot explains what Cresna inspected and prevents unavailable sources from appearing as findings. */
+export const storeScanSnapshots = mysqlTable(
+  "storeScanSnapshots",
+  {
+    id: bigint("id", { mode: "number" }).autoincrement().primaryKey(),
+    storeId: bigint("storeId", { mode: "number" })
+      .notNull()
+      .references(() => stores.id, { onDelete: "cascade" }),
+    status: mysqlEnum("status", ["ready", "needs_more_data", "failed"]).notNull(),
+    coveragePercent: int("coveragePercent").notNull(),
+    sourceCoverageJson: text("sourceCoverageJson").notNull(),
+    summary: text("summary").notNull(),
+    scannedAt: timestamp("scannedAt").defaultNow().notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [index("store_scan_snapshots_store_idx").on(table.storeId, table.scannedAt)]
+);
+
+/** Component-level scores explain the transparent Growth Score rather than hiding a generic number behind an opaque model. */
+export const growthScoreSnapshots = mysqlTable(
+  "growthScoreSnapshots",
+  {
+    id: bigint("id", { mode: "number" }).autoincrement().primaryKey(),
+    storeId: bigint("storeId", { mode: "number" })
+      .notNull()
+      .references(() => stores.id, { onDelete: "cascade" }),
+    overallScore: int("overallScore"),
+    coveragePercent: int("coveragePercent").notNull(),
+    status: mysqlEnum("status", ["ready", "partial", "needs_more_data"]).notNull(),
+    componentsJson: text("componentsJson").notNull(),
+    calculationVersion: varchar("calculationVersion", { length: 32 }).notNull(),
+    calculatedAt: timestamp("calculatedAt").defaultNow().notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [index("growth_score_snapshots_store_idx").on(table.storeId, table.calculatedAt)]
 );
 
 /** Daily aggregate store measurements. Customer-level personal data is not retained. */
@@ -258,6 +331,7 @@ export const recommendations = mysqlTable(
       "margin_erosion",
       "restock",
       "product_copy",
+      "pricing",
     ]).notNull(),
     title: varchar("title", { length: 255 }).notNull(),
     rationale: text("rationale").notNull(),
@@ -280,6 +354,45 @@ export const recommendations = mysqlTable(
     index("recommendations_store_status_idx").on(table.storeId, table.status),
     index("recommendations_store_priority_idx").on(table.storeId, table.priorityRank),
   ]
+);
+
+/** AI drafts are reviewable proposed work; no Shopify storefront mutation occurs without a future explicit write approval. */
+export const aiActionDrafts = mysqlTable(
+  "aiActionDrafts",
+  {
+    id: bigint("id", { mode: "number" }).autoincrement().primaryKey(),
+    storeId: bigint("storeId", { mode: "number" })
+      .notNull()
+      .references(() => stores.id, { onDelete: "cascade" }),
+    recommendationId: bigint("recommendationId", { mode: "number" }).references(() => recommendations.id, { onDelete: "set null" }),
+    productId: bigint("productId", { mode: "number" }).references(() => products.id, { onDelete: "set null" }),
+    actionType: mysqlEnum("actionType", ["product_description", "positioning"]).notNull(),
+    originalContent: text("originalContent").notNull(),
+    generatedContent: text("generatedContent").notNull(),
+    inputEvidenceJson: text("inputEvidenceJson").notNull(),
+    status: mysqlEnum("status", ["generated", "approved", "rejected"]).default("generated").notNull(),
+    approvedAt: timestamp("approvedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [index("ai_action_drafts_store_status_idx").on(table.storeId, table.status)]
+);
+
+/** Decision history is the durable learning trail for the merchant’s Business Brain. */
+export const businessBrainEvents = mysqlTable(
+  "businessBrainEvents",
+  {
+    id: bigint("id", { mode: "number" }).autoincrement().primaryKey(),
+    storeId: bigint("storeId", { mode: "number" })
+      .notNull()
+      .references(() => stores.id, { onDelete: "cascade" }),
+    eventType: mysqlEnum("eventType", ["scan_completed", "recommendation_approved", "recommendation_dismissed", "draft_generated", "draft_approved", "draft_rejected", "action_completed", "outcome_measured"]).notNull(),
+    entityType: varchar("entityType", { length: 80 }).notNull(),
+    entityId: bigint("entityId", { mode: "number" }),
+    payloadJson: text("payloadJson").notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [index("business_brain_events_store_idx").on(table.storeId, table.createdAt)]
 );
 
 /** Measurement windows capture revenue impact only after a seller confirms an action. */

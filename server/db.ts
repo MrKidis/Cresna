@@ -1,12 +1,14 @@
-import { and, desc, eq, gt } from "drizzle-orm";
+import { and, desc, eq, gt, gte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   InsertUser,
+  aiActionDrafts,
   billingAccounts,
   betaFeatureOverrides,
   betaFeedback,
   foundingBetaInvites,
   merchantGrowthProfiles,
+  products,
   productDailyMetrics,
   recommendationActions,
   recommendations,
@@ -129,6 +131,9 @@ export async function updateGrowthProfile(input: {
   brandSummary?: string | null;
   targetCustomer?: string | null;
   brandVoice?: string | null;
+  brandValues?: string | null;
+  positioning?: string | null;
+  differentiators?: string | null;
 }) {
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
@@ -138,6 +143,9 @@ export async function updateGrowthProfile(input: {
     brandSummary: input.brandSummary?.trim() || null,
     targetCustomer: input.targetCustomer?.trim() || null,
     brandVoice: input.brandVoice?.trim() || null,
+    brandValues: input.brandValues?.trim() || null,
+    positioning: input.positioning?.trim() || null,
+    differentiators: input.differentiators?.trim() || null,
   };
   await db.insert(merchantGrowthProfiles).values(values).onDuplicateKeyUpdate({
     set: {
@@ -145,6 +153,9 @@ export async function updateGrowthProfile(input: {
       brandSummary: values.brandSummary,
       targetCustomer: values.targetCustomer,
       brandVoice: values.brandVoice,
+      brandValues: values.brandValues,
+      positioning: values.positioning,
+      differentiators: values.differentiators,
     },
   });
   return getGrowthProfile(input.userId);
@@ -283,6 +294,26 @@ export async function getAnalyticsOverview(userId: number) {
   ]);
 
   return { store, dailyMetrics: dailyMetrics.reverse(), productMetrics };
+}
+
+export async function getCatalogProductsForUser(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const store = await getPrimaryStoreForUser(userId);
+  if (!store) return [];
+  return db.select().from(products).where(eq(products.storeId, store.id)).orderBy(products.title);
+}
+
+export async function getMonthlyAiActionDraftCount(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const store = await getPrimaryStoreForUser(userId);
+  if (!store) return 0;
+  const startOfMonth = new Date();
+  startOfMonth.setUTCDate(1);
+  startOfMonth.setUTCHours(0, 0, 0, 0);
+  const rows = await db.select({ id: aiActionDrafts.id }).from(aiActionDrafts).where(and(eq(aiActionDrafts.storeId, store.id), gte(aiActionDrafts.createdAt, startOfMonth)));
+  return rows.length;
 }
 
 export async function getRecommendationsForUser(userId: number) {

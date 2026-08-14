@@ -1,0 +1,2284 @@
+{
+  "version": "5",
+  "dialect": "mysql",
+  "id": "ce121f51-e001-40ee-a807-98b57665facd",
+  "prevId": "057a6823-3c71-4a0d-801a-6f2afe1585dd",
+  "tables": {
+    "aiActionDrafts": {
+      "name": "aiActionDrafts",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "storeId": {
+          "name": "storeId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "recommendationId": {
+          "name": "recommendationId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "productId": {
+          "name": "productId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "actionType": {
+          "name": "actionType",
+          "type": "enum('product_description','positioning')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "originalContent": {
+          "name": "originalContent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "generatedContent": {
+          "name": "generatedContent",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "inputEvidenceJson": {
+          "name": "inputEvidenceJson",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('generated','approved','rejected')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'generated'"
+        },
+        "approvedAt": {
+          "name": "approvedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "ai_action_drafts_store_status_idx": {
+          "name": "ai_action_drafts_store_status_idx",
+          "columns": [
+            "storeId",
+            "status"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "aiActionDrafts_storeId_stores_id_fk": {
+          "name": "aiActionDrafts_storeId_stores_id_fk",
+          "tableFrom": "aiActionDrafts",
+          "tableTo": "stores",
+          "columnsFrom": [
+            "storeId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "aiActionDrafts_recommendationId_recommendations_id_fk": {
+          "name": "aiActionDrafts_recommendationId_recommendations_id_fk",
+          "tableFrom": "aiActionDrafts",
+          "tableTo": "recommendations",
+          "columnsFrom": [
+            "recommendationId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "aiActionDrafts_productId_products_id_fk": {
+          "name": "aiActionDrafts_productId_products_id_fk",
+          "tableFrom": "aiActionDrafts",
+          "tableTo": "products",
+          "columnsFrom": [
+            "productId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "aiActionDrafts_id": {
+          "name": "aiActionDrafts_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "betaFeatureOverrides": {
+      "name": "betaFeatureOverrides",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "betaInviteId": {
+          "name": "betaInviteId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "featureKey": {
+          "name": "featureKey",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "enabled": {
+          "name": "enabled",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "beta_feature_override_unique": {
+          "name": "beta_feature_override_unique",
+          "columns": [
+            "betaInviteId",
+            "featureKey"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "betaFeatureOverrides_betaInviteId_foundingBetaInvites_id_fk": {
+          "name": "betaFeatureOverrides_betaInviteId_foundingBetaInvites_id_fk",
+          "tableFrom": "betaFeatureOverrides",
+          "tableTo": "foundingBetaInvites",
+          "columnsFrom": [
+            "betaInviteId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "betaFeatureOverrides_id": {
+          "name": "betaFeatureOverrides_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "betaFeedback": {
+      "name": "betaFeedback",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "betaInviteId": {
+          "name": "betaInviteId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "checkpoint": {
+          "name": "checkpoint",
+          "type": "enum('day_1','day_3','day_7')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "growthProfileRating": {
+          "name": "growthProfileRating",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "mostUsefulRecommendation": {
+          "name": "mostUsefulRecommendation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "willingnessToPay": {
+          "name": "willingnessToPay",
+          "type": "enum('definitely','probably','maybe','no')",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "feedbackText": {
+          "name": "feedbackText",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "beta_feedback_invite_checkpoint_unique": {
+          "name": "beta_feedback_invite_checkpoint_unique",
+          "columns": [
+            "betaInviteId",
+            "checkpoint"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "betaFeedback_betaInviteId_foundingBetaInvites_id_fk": {
+          "name": "betaFeedback_betaInviteId_foundingBetaInvites_id_fk",
+          "tableFrom": "betaFeedback",
+          "tableTo": "foundingBetaInvites",
+          "columnsFrom": [
+            "betaInviteId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "betaFeedback_id": {
+          "name": "betaFeedback_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "billingAccounts": {
+      "name": "billingAccounts",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "stripeSubscriptionId": {
+          "name": "stripeSubscriptionId",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "billing_accounts_user_unique": {
+          "name": "billing_accounts_user_unique",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "billingAccounts_userId_users_id_fk": {
+          "name": "billingAccounts_userId_users_id_fk",
+          "tableFrom": "billingAccounts",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "billingAccounts_id": {
+          "name": "billingAccounts_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "billingAccounts_stripeSubscriptionId_unique": {
+          "name": "billingAccounts_stripeSubscriptionId_unique",
+          "columns": [
+            "stripeSubscriptionId"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "businessBrainEvents": {
+      "name": "businessBrainEvents",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "storeId": {
+          "name": "storeId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "eventType": {
+          "name": "eventType",
+          "type": "enum('scan_completed','recommendation_approved','recommendation_dismissed','draft_generated','draft_approved','draft_rejected','action_completed','outcome_measured')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "entityType": {
+          "name": "entityType",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "entityId": {
+          "name": "entityId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "payloadJson": {
+          "name": "payloadJson",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "business_brain_events_store_idx": {
+          "name": "business_brain_events_store_idx",
+          "columns": [
+            "storeId",
+            "createdAt"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "businessBrainEvents_storeId_stores_id_fk": {
+          "name": "businessBrainEvents_storeId_stores_id_fk",
+          "tableFrom": "businessBrainEvents",
+          "tableTo": "stores",
+          "columnsFrom": [
+            "storeId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "businessBrainEvents_id": {
+          "name": "businessBrainEvents_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "collections": {
+      "name": "collections",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "storeId": {
+          "name": "storeId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "shopifyCollectionId": {
+          "name": "shopifyCollectionId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "handle": {
+          "name": "handle",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "descriptionHtml": {
+          "name": "descriptionHtml",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "seoTitle": {
+          "name": "seoTitle",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "seoDescription": {
+          "name": "seoDescription",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "productCount": {
+          "name": "productCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "updatedAtSource": {
+          "name": "updatedAtSource",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "collections_store_shopify_collection_unique": {
+          "name": "collections_store_shopify_collection_unique",
+          "columns": [
+            "storeId",
+            "shopifyCollectionId"
+          ],
+          "isUnique": true
+        },
+        "collections_store_idx": {
+          "name": "collections_store_idx",
+          "columns": [
+            "storeId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "collections_storeId_stores_id_fk": {
+          "name": "collections_storeId_stores_id_fk",
+          "tableFrom": "collections",
+          "tableTo": "stores",
+          "columnsFrom": [
+            "storeId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "collections_id": {
+          "name": "collections_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "foundingBetaInvites": {
+      "name": "foundingBetaInvites",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(320)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "invitedByUserId": {
+          "name": "invitedByUserId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('invited','active','expired','revoked')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'invited'"
+        },
+        "activatedUserId": {
+          "name": "activatedUserId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "activatedAt": {
+          "name": "activatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "expiresAt": {
+          "name": "expiresAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "founding_beta_invites_status_idx": {
+          "name": "founding_beta_invites_status_idx",
+          "columns": [
+            "status"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "foundingBetaInvites_invitedByUserId_users_id_fk": {
+          "name": "foundingBetaInvites_invitedByUserId_users_id_fk",
+          "tableFrom": "foundingBetaInvites",
+          "tableTo": "users",
+          "columnsFrom": [
+            "invitedByUserId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "foundingBetaInvites_activatedUserId_users_id_fk": {
+          "name": "foundingBetaInvites_activatedUserId_users_id_fk",
+          "tableFrom": "foundingBetaInvites",
+          "tableTo": "users",
+          "columnsFrom": [
+            "activatedUserId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "foundingBetaInvites_id": {
+          "name": "foundingBetaInvites_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "foundingBetaInvites_email_unique": {
+          "name": "foundingBetaInvites_email_unique",
+          "columns": [
+            "email"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "growthScoreSnapshots": {
+      "name": "growthScoreSnapshots",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "storeId": {
+          "name": "storeId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "overallScore": {
+          "name": "overallScore",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "coveragePercent": {
+          "name": "coveragePercent",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('ready','partial','needs_more_data')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "componentsJson": {
+          "name": "componentsJson",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "calculationVersion": {
+          "name": "calculationVersion",
+          "type": "varchar(32)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "calculatedAt": {
+          "name": "calculatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "growth_score_snapshots_store_idx": {
+          "name": "growth_score_snapshots_store_idx",
+          "columns": [
+            "storeId",
+            "calculatedAt"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "growthScoreSnapshots_storeId_stores_id_fk": {
+          "name": "growthScoreSnapshots_storeId_stores_id_fk",
+          "tableFrom": "growthScoreSnapshots",
+          "tableTo": "stores",
+          "columnsFrom": [
+            "storeId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "growthScoreSnapshots_id": {
+          "name": "growthScoreSnapshots_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "merchantGrowthProfiles": {
+      "name": "merchantGrowthProfiles",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "goalsJson": {
+          "name": "goalsJson",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "brandSummary": {
+          "name": "brandSummary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "targetCustomer": {
+          "name": "targetCustomer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "brandVoice": {
+          "name": "brandVoice",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "brandValues": {
+          "name": "brandValues",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "positioning": {
+          "name": "positioning",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "differentiators": {
+          "name": "differentiators",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scanStatus": {
+          "name": "scanStatus",
+          "type": "enum('not_started','ready','needs_more_data')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'not_started'"
+        },
+        "lastScannedAt": {
+          "name": "lastScannedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "merchant_growth_profiles_user_unique": {
+          "name": "merchant_growth_profiles_user_unique",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "merchantGrowthProfiles_userId_users_id_fk": {
+          "name": "merchantGrowthProfiles_userId_users_id_fk",
+          "tableFrom": "merchantGrowthProfiles",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "merchantGrowthProfiles_id": {
+          "name": "merchantGrowthProfiles_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "productDailyMetrics": {
+      "name": "productDailyMetrics",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "storeId": {
+          "name": "storeId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "productId": {
+          "name": "productId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shopifyProductId": {
+          "name": "shopifyProductId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "metricDate": {
+          "name": "metricDate",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sku": {
+          "name": "sku",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "unitsSold": {
+          "name": "unitsSold",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "orderCount": {
+          "name": "orderCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "refundCount": {
+          "name": "refundCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "grossRevenue": {
+          "name": "grossRevenue",
+          "type": "decimal(14,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "discountAmount": {
+          "name": "discountAmount",
+          "type": "decimal(14,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "refundAmount": {
+          "name": "refundAmount",
+          "type": "decimal(14,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "costEstimate": {
+          "name": "costEstimate",
+          "type": "decimal(14,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sourceUpdatedAt": {
+          "name": "sourceUpdatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "product_daily_metrics_product_date_unique": {
+          "name": "product_daily_metrics_product_date_unique",
+          "columns": [
+            "storeId",
+            "shopifyProductId",
+            "metricDate"
+          ],
+          "isUnique": true
+        },
+        "product_daily_metrics_store_idx": {
+          "name": "product_daily_metrics_store_idx",
+          "columns": [
+            "storeId"
+          ],
+          "isUnique": false
+        },
+        "product_daily_metrics_product_idx": {
+          "name": "product_daily_metrics_product_idx",
+          "columns": [
+            "productId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "productDailyMetrics_storeId_stores_id_fk": {
+          "name": "productDailyMetrics_storeId_stores_id_fk",
+          "tableFrom": "productDailyMetrics",
+          "tableTo": "stores",
+          "columnsFrom": [
+            "storeId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "productDailyMetrics_productId_products_id_fk": {
+          "name": "productDailyMetrics_productId_products_id_fk",
+          "tableFrom": "productDailyMetrics",
+          "tableTo": "products",
+          "columnsFrom": [
+            "productId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "productDailyMetrics_id": {
+          "name": "productDailyMetrics_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "products": {
+      "name": "products",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "storeId": {
+          "name": "storeId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "shopifyProductId": {
+          "name": "shopifyProductId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "handle": {
+          "name": "handle",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "vendor": {
+          "name": "vendor",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "productType": {
+          "name": "productType",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "totalInventory": {
+          "name": "totalInventory",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "descriptionHtml": {
+          "name": "descriptionHtml",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "seoTitle": {
+          "name": "seoTitle",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "seoDescription": {
+          "name": "seoDescription",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "mediaCount": {
+          "name": "mediaCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "updatedAtSource": {
+          "name": "updatedAtSource",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "products_store_shopify_product_unique": {
+          "name": "products_store_shopify_product_unique",
+          "columns": [
+            "storeId",
+            "shopifyProductId"
+          ],
+          "isUnique": true
+        },
+        "products_store_idx": {
+          "name": "products_store_idx",
+          "columns": [
+            "storeId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "products_storeId_stores_id_fk": {
+          "name": "products_storeId_stores_id_fk",
+          "tableFrom": "products",
+          "tableTo": "stores",
+          "columnsFrom": [
+            "storeId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "products_id": {
+          "name": "products_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "recommendationActions": {
+      "name": "recommendationActions",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "recommendationId": {
+          "name": "recommendationId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "actedAt": {
+          "name": "actedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "baselineStart": {
+          "name": "baselineStart",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "baselineEnd": {
+          "name": "baselineEnd",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "baselineRevenue": {
+          "name": "baselineRevenue",
+          "type": "decimal(14,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "comparisonStart": {
+          "name": "comparisonStart",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "comparisonEnd": {
+          "name": "comparisonEnd",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "comparisonRevenue": {
+          "name": "comparisonRevenue",
+          "type": "decimal(14,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "revenueChange": {
+          "name": "revenueChange",
+          "type": "decimal(14,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "measurementStatus": {
+          "name": "measurementStatus",
+          "type": "enum('waiting','measured','insufficient_data')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'waiting'"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "recommendation_actions_recommendation_idx": {
+          "name": "recommendation_actions_recommendation_idx",
+          "columns": [
+            "recommendationId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "recommendationActions_recommendationId_recommendations_id_fk": {
+          "name": "recommendationActions_recommendationId_recommendations_id_fk",
+          "tableFrom": "recommendationActions",
+          "tableTo": "recommendations",
+          "columnsFrom": [
+            "recommendationId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "recommendationActions_id": {
+          "name": "recommendationActions_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "recommendations": {
+      "name": "recommendations",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "storeId": {
+          "name": "storeId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "category": {
+          "name": "category",
+          "type": "enum('underperforming_sku','high_refunds','abandoned_cart','margin_erosion','restock','product_copy')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rationale": {
+          "name": "rationale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "recommendedAction": {
+          "name": "recommendedAction",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "evidence": {
+          "name": "evidence",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estimatedImpactLow": {
+          "name": "estimatedImpactLow",
+          "type": "decimal(14,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estimatedImpactHigh": {
+          "name": "estimatedImpactHigh",
+          "type": "decimal(14,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "confidencePercent": {
+          "name": "confidencePercent",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "priorityRank": {
+          "name": "priorityRank",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('open','approved','in_progress','completed','dismissed')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'open'"
+        },
+        "effortLevel": {
+          "name": "effortLevel",
+          "type": "enum('low','medium','high')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'medium'"
+        },
+        "generatedAt": {
+          "name": "generatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "expiresAt": {
+          "name": "expiresAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "recommendations_store_status_idx": {
+          "name": "recommendations_store_status_idx",
+          "columns": [
+            "storeId",
+            "status"
+          ],
+          "isUnique": false
+        },
+        "recommendations_store_priority_idx": {
+          "name": "recommendations_store_priority_idx",
+          "columns": [
+            "storeId",
+            "priorityRank"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "recommendations_storeId_stores_id_fk": {
+          "name": "recommendations_storeId_stores_id_fk",
+          "tableFrom": "recommendations",
+          "tableTo": "stores",
+          "columnsFrom": [
+            "storeId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "recommendations_id": {
+          "name": "recommendations_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "shopifyOauthStates": {
+      "name": "shopifyOauthStates",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "shopDomain": {
+          "name": "shopDomain",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "stateHash": {
+          "name": "stateHash",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expiresAt": {
+          "name": "expiresAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "shopify_oauth_states_user_idx": {
+          "name": "shopify_oauth_states_user_idx",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "shopifyOauthStates_userId_users_id_fk": {
+          "name": "shopifyOauthStates_userId_users_id_fk",
+          "tableFrom": "shopifyOauthStates",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "shopifyOauthStates_id": {
+          "name": "shopifyOauthStates_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "shopifyOauthStates_stateHash_unique": {
+          "name": "shopifyOauthStates_stateHash_unique",
+          "columns": [
+            "stateHash"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "storeDailyMetrics": {
+      "name": "storeDailyMetrics",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "storeId": {
+          "name": "storeId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "metricDate": {
+          "name": "metricDate",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "grossRevenue": {
+          "name": "grossRevenue",
+          "type": "decimal(14,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "netRevenue": {
+          "name": "netRevenue",
+          "type": "decimal(14,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "orderCount": {
+          "name": "orderCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "customerCount": {
+          "name": "customerCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "checkoutCount": {
+          "name": "checkoutCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "abandonedCheckoutCount": {
+          "name": "abandonedCheckoutCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "refundCount": {
+          "name": "refundCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "refundAmount": {
+          "name": "refundAmount",
+          "type": "decimal(14,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sourceUpdatedAt": {
+          "name": "sourceUpdatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "store_daily_metrics_store_date_unique": {
+          "name": "store_daily_metrics_store_date_unique",
+          "columns": [
+            "storeId",
+            "metricDate"
+          ],
+          "isUnique": true
+        },
+        "store_daily_metrics_store_idx": {
+          "name": "store_daily_metrics_store_idx",
+          "columns": [
+            "storeId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "storeDailyMetrics_storeId_stores_id_fk": {
+          "name": "storeDailyMetrics_storeId_stores_id_fk",
+          "tableFrom": "storeDailyMetrics",
+          "tableTo": "stores",
+          "columnsFrom": [
+            "storeId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "storeDailyMetrics_id": {
+          "name": "storeDailyMetrics_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "storeScanSnapshots": {
+      "name": "storeScanSnapshots",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "storeId": {
+          "name": "storeId",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "enum('ready','needs_more_data','failed')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "coveragePercent": {
+          "name": "coveragePercent",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sourceCoverageJson": {
+          "name": "sourceCoverageJson",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "summary": {
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "scannedAt": {
+          "name": "scannedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "store_scan_snapshots_store_idx": {
+          "name": "store_scan_snapshots_store_idx",
+          "columns": [
+            "storeId",
+            "scannedAt"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "storeScanSnapshots_storeId_stores_id_fk": {
+          "name": "storeScanSnapshots_storeId_stores_id_fk",
+          "tableFrom": "storeScanSnapshots",
+          "tableTo": "stores",
+          "columnsFrom": [
+            "storeId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "storeScanSnapshots_id": {
+          "name": "storeScanSnapshots_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "stores": {
+      "name": "stores",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "userId": {
+          "name": "userId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "shopifyShopId": {
+          "name": "shopifyShopId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "myshopifyDomain": {
+          "name": "myshopifyDomain",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "displayName": {
+          "name": "displayName",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "currency": {
+          "name": "currency",
+          "type": "varchar(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "accessTokenCiphertext": {
+          "name": "accessTokenCiphertext",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "grantedScopes": {
+          "name": "grantedScopes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "connectionStatus": {
+          "name": "connectionStatus",
+          "type": "enum('connected','disconnected','error')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'connected'"
+        },
+        "installedAt": {
+          "name": "installedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "lastSyncedAt": {
+          "name": "lastSyncedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "stores_user_idx": {
+          "name": "stores_user_idx",
+          "columns": [
+            "userId"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "stores_userId_users_id_fk": {
+          "name": "stores_userId_users_id_fk",
+          "tableFrom": "stores",
+          "tableTo": "users",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "stores_id": {
+          "name": "stores_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "stores_shopifyShopId_unique": {
+          "name": "stores_shopifyShopId_unique",
+          "columns": [
+            "shopifyShopId"
+          ]
+        },
+        "stores_myshopifyDomain_unique": {
+          "name": "stores_myshopifyDomain_unique",
+          "columns": [
+            "myshopifyDomain"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    },
+    "users": {
+      "name": "users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "openId": {
+          "name": "openId",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "workspaceName": {
+          "name": "workspaceName",
+          "type": "varchar(120)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(320)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "loginMethod": {
+          "name": "loginMethod",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "enum('user','admin')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'user'"
+        },
+        "stripeCustomerId": {
+          "name": "stripeCustomerId",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        },
+        "lastSignedIn": {
+          "name": "lastSignedIn",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "users_id": {
+          "name": "users_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "users_openId_unique": {
+          "name": "users_openId_unique",
+          "columns": [
+            "openId"
+          ]
+        },
+        "users_stripeCustomerId_unique": {
+          "name": "users_stripeCustomerId_unique",
+          "columns": [
+            "stripeCustomerId"
+          ]
+        }
+      },
+      "checkConstraint": {}
+    }
+  },
+  "views": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "tables": {},
+    "indexes": {}
+  }
+}

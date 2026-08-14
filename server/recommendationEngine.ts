@@ -1,14 +1,19 @@
 import { and, desc, eq, gte, lte } from "drizzle-orm";
-import { recommendationActions, recommendations, storeDailyMetrics } from "../drizzle/schema";
-import { getAnalyticsOverview, getDb } from "./db";
+import { businessBrainEvents, recommendationActions, recommendations, storeDailyMetrics } from "../drizzle/schema";
+import { getAnalyticsOverview, getCatalogProductsForUser, getDb } from "./db";
 import { invokeLLM } from "./_core/llm";
 
 type Candidate = {
-  category: "underperforming_sku" | "high_refunds" | "abandoned_cart" | "margin_erosion" | "restock" | "product_copy";
+  category: "underperforming_sku" | "high_refunds" | "abandoned_cart" | "margin_erosion" | "restock" | "product_copy" | "pricing";
   evidence: string;
   maximumImpact: number;
   effortLevel: "low" | "medium" | "high";
+  impactKnown?: boolean;
 };
+
+export function isDraftCapableRecommendationCategory(category: string) {
+  return category === "product_copy" || category === "pricing";
+}
 
 type ProductMetric = Awaited<ReturnType<typeof getAnalyticsOverview>>["productMetrics"][number];
 
@@ -41,6 +46,28 @@ export function buildCandidates(overview: Awaited<ReturnType<typeof getAnalytics
   return rankCandidates(candidates).slice(0, 12);
 }
 
+function plainText(value: string | null | undefined) {
+  return (value || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
+export function buildCatalogCandidates(catalog: Awaited<ReturnType<typeof getCatalogProductsForUser>>): Candidate[] {
+  const active = catalog.filter(product => product.status === "ACTIVE");
+  if (!active.length) return [];
+  const thinDescriptions = active.filter(product => plainText(product.descriptionHtml).length < 80);
+  const incompleteSeo = active.filter(product => !product.seoTitle?.trim() || !product.seoDescription?.trim());
+  const noMedia = active.filter(product => (product.mediaCount || 0) === 0);
+  const activeSalePrices = active.filter(product => Number(product.priceMin || 0) > 0 && Number(product.compareAtPriceMin || 0) > Number(product.priceMin || 0));
+  const wideVariantRanges = active.filter(product => Number(product.priceMin || 0) > 0 && Number(product.priceMax || 0) >= Number(product.priceMin) * 1.5);
+  const samples = (products: typeof active) => products.slice(0, 3).map(product => product.title).join(", ");
+  const candidates: Candidate[] = [];
+  if (thinDescriptions.length) candidates.push({ category: "product_copy", evidence: `${thinDescriptions.length} of ${active.length} active products have fewer than 80 characters of product description content (${samples(thinDescriptions)}${thinDescriptions.length > 3 ? ", …" : ""}).`, maximumImpact: 0, impactKnown: false, effortLevel: "low" });
+  if (incompleteSeo.length) candidates.push({ category: "product_copy", evidence: `${incompleteSeo.length} of ${active.length} active products are missing an SEO title or SEO description (${samples(incompleteSeo)}${incompleteSeo.length > 3 ? ", …" : ""}).`, maximumImpact: 0, impactKnown: false, effortLevel: "low" });
+  if (noMedia.length) candidates.push({ category: "product_copy", evidence: `${noMedia.length} of ${active.length} active products have no product media recorded in Shopify (${samples(noMedia)}${noMedia.length > 3 ? ", …" : ""}).`, maximumImpact: 0, impactKnown: false, effortLevel: "medium" });
+  if (activeSalePrices.length) candidates.push({ category: "pricing", evidence: `${activeSalePrices.length} active products have a Shopify compare-at price higher than their current price (${samples(activeSalePrices)}${activeSalePrices.length > 3 ? ", …" : ""}).`, maximumImpact: 0, impactKnown: false, effortLevel: "low" });
+  if (wideVariantRanges.length) candidates.push({ category: "pricing", evidence: `${wideVariantRanges.length} active products have a variant price range where the highest price is at least 50% above the lowest (${samples(wideVariantRanges)}${wideVariantRanges.length > 3 ? ", …" : ""}).`, maximumImpact: 0, impactKnown: false, effortLevel: "medium" });
+  return candidates;
+}
+
 export function rankCandidates(candidates: Candidate[]) {
   return [...candidates].sort((left, right) => right.maximumImpact - left.maximumImpact || left.effortLevel.localeCompare(right.effortLevel));
 }
@@ -48,13 +75,14 @@ export function rankCandidates(candidates: Candidate[]) {
 export async function generateRecommendationsForUser(userId: number) {
   const overview = await getAnalyticsOverview(userId);
   if (!overview.store) throw new Error("Connect a Shopify store before generating recommendations");
-  const candidates = buildCandidates(overview);
-  if (!candidates.length) return { generated: 0, reason: "At least seven days of sufficient store activity are required before recommendations can be generated." };
+  const catalog = await getCatalogProductsForUser(userId);
+  const candidates = rankCandidates([...buildCandidates(overview), ...buildCatalogCandidates(catalog)]).slice(0, 12);
+  if (!candidates.length) return { generated: 0, reason: "Cresna needs active catalog records or at least seven reporting days before it can identify a verified opportunity." };
   const result = await invokeLLM({
     model: "gpt-5-mini",
     max_tokens: 2200,
     messages: [
-      { role: "system", content: "You are Cresna's ecommerce analyst. Use only the supplied evidence. Do not invent metrics, products, causes, or outcomes. Recommendations must be cautious estimates, should not recommend a discount unless the evidence explicitly supports it, and must give a concrete seller action. Return JSON only." },
+      { role: "system", content: "You are Cresna's ecommerce analyst. Use only the supplied evidence. Do not invent metrics, products, causes, or outcomes. Recommendations must be cautious estimates, should not recommend a discount unless the evidence explicitly supports it, and must give a concrete seller action. If a candidate has impactKnown=false, estimatedImpactLow and estimatedImpactHigh must both be zero and the rationale must say that revenue impact needs more store history. Return JSON only." },
       { role: "user", content: JSON.stringify({ currency: overview.store.currency, reportingDays: overview.dailyMetrics.length, candidates }) },
     ],
     response_format: {
@@ -71,7 +99,7 @@ export async function generateRecommendationsForUser(userId: number) {
               items: {
                 type: "object",
                 properties: {
-                  category: { type: "string", enum: ["underperforming_sku", "high_refunds", "abandoned_cart", "margin_erosion", "restock", "product_copy"] },
+                  category: { type: "string", enum: ["underperforming_sku", "high_refunds", "abandoned_cart", "margin_erosion", "restock", "product_copy", "pricing"] },
                   title: { type: "string" },
                   rationale: { type: "string" },
                   recommendedAction: { type: "string" },
@@ -117,7 +145,21 @@ export async function approveRecommendationForUser(userId: number, recommendatio
   if (!recommendation) throw new Error("Opportunity not found");
   if (recommendation.status !== "open") throw new Error("Only open opportunities can be approved");
   await db.update(recommendations).set({ status: "approved" }).where(eq(recommendations.id, recommendationId));
+  await db.insert(businessBrainEvents).values({ storeId: overview.store.id, eventType: "recommendation_approved", entityType: "recommendation", entityId: recommendationId, payloadJson: JSON.stringify({ category: recommendation.category, title: recommendation.title }) });
   return { approved: true };
+}
+
+export async function dismissRecommendationForUser(userId: number, recommendationId: number) {
+  const overview = await getAnalyticsOverview(userId);
+  if (!overview.store) throw new Error("Connect a Shopify store before dismissing an opportunity");
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const recommendation = (await db.select().from(recommendations).where(and(eq(recommendations.id, recommendationId), eq(recommendations.storeId, overview.store.id))).limit(1))[0];
+  if (!recommendation) throw new Error("Opportunity not found");
+  if (recommendation.status !== "open") throw new Error("Only open opportunities can be dismissed");
+  await db.update(recommendations).set({ status: "dismissed" }).where(eq(recommendations.id, recommendationId));
+  await db.insert(businessBrainEvents).values({ storeId: overview.store.id, eventType: "recommendation_dismissed", entityType: "recommendation", entityId: recommendationId, payloadJson: JSON.stringify({ category: recommendation.category, title: recommendation.title }) });
+  return { dismissed: true };
 }
 
 export async function completeRecommendationForUser(userId: number, recommendationId: number) {
@@ -136,6 +178,7 @@ export async function completeRecommendationForUser(userId: number, recommendati
   const comparisonEnd = new Date(comparisonStart.getTime() + 13 * 24 * 60 * 60 * 1000);
   await db.insert(recommendationActions).values({ recommendationId, actedAt: new Date(), baselineStart, baselineEnd, baselineRevenue: baseline.toFixed(2), comparisonStart, comparisonEnd, measurementStatus: "waiting" });
   await db.update(recommendations).set({ status: "completed" }).where(eq(recommendations.id, recommendationId));
+  await db.insert(businessBrainEvents).values({ storeId: overview.store.id, eventType: "action_completed", entityType: "recommendation", entityId: recommendationId, payloadJson: JSON.stringify({ baselineRevenue: baseline, comparisonEnd }) });
   return { baselineRevenue: baseline, comparisonEnd };
 }
 
@@ -148,6 +191,8 @@ export async function refreshRevenueImpactForStore(storeId: number) {
     const metrics = await db.select().from(storeDailyMetrics).where(and(eq(storeDailyMetrics.storeId, storeId), gte(storeDailyMetrics.metricDate, action.comparisonStart), lte(storeDailyMetrics.metricDate, action.comparisonEnd)));
     if (!metrics.length || Math.max(...metrics.map(metric => metric.metricDate.getTime())) < action.comparisonEnd.getTime()) continue;
     const comparisonRevenue = metrics.reduce((sum, metric) => sum + Number(metric.netRevenue), 0);
-    await db.update(recommendationActions).set({ comparisonRevenue: comparisonRevenue.toFixed(2), revenueChange: (comparisonRevenue - Number(action.baselineRevenue)).toFixed(2), measurementStatus: "measured" }).where(eq(recommendationActions.id, action.id));
+    const revenueChange = comparisonRevenue - Number(action.baselineRevenue);
+    await db.update(recommendationActions).set({ comparisonRevenue: comparisonRevenue.toFixed(2), revenueChange: revenueChange.toFixed(2), measurementStatus: "measured" }).where(eq(recommendationActions.id, action.id));
+    await db.insert(businessBrainEvents).values({ storeId, eventType: "outcome_measured", entityType: "recommendation_action", entityId: action.id, payloadJson: JSON.stringify({ recommendationId: action.recommendationId, baselineRevenue: Number(action.baselineRevenue), comparisonRevenue, revenueChange }) });
   }
 }

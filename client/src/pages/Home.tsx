@@ -7,15 +7,15 @@ import { useLocation } from "wouter";
 const plans = [
   {
     name: "Pro",
-    price: "$29",
-    description: "A focused growth loop for independent owners.",
-    features: ["Sales health dashboard", "AI action feed", "Revenue impact tracking"],
+    price: "$19",
+    description: "A focused growth loop for independent owners who need useful work, not another chatbot.",
+    features: ["Business Brain + transparent Growth Score", "Evidence-backed Opportunity Engine", "5 custom AI action drafts per month"],
   },
   {
     name: "Growth",
-    price: "$79",
-    description: "Deeper scans and more frequent intelligence for growing teams.",
-    features: ["Everything in Pro", "Advanced product and refund analysis", "Priority data refreshes"],
+    price: "$49",
+    description: "Five times more custom-AI capacity for growing brands that turn opportunities into reviewed improvements each week.",
+    features: ["Everything in Pro", "25 custom AI action drafts per month", "Five times the monthly custom-AI capacity"],
   },
 ];
 
@@ -52,7 +52,7 @@ export default function Home() {
                 See what to do <span className="relative whitespace-nowrap"><span className="relative z-10">next.</span><span className="absolute inset-x-[-3%] bottom-[8%] -z-0 h-[25%] bg-[#d9fa55]" /></span>
               </h1>
               <p className="reveal-up-delay mt-8 max-w-xl text-pretty text-[17px] leading-8 text-[#53605a]">
-                Cresna turns approved Shopify data into a Growth Profile, ranks the clearest opportunities, and measures what changed after you act.
+                Cresna turns approved Shopify data into a Business Brain, finds evidence-backed opportunities, creates reviewable work, and measures what changed after you act.
               </p>
               <div className="reveal-up-delay mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center">
                 <Button onClick={goToWorkspace} size="lg" className="h-14 rounded-full bg-[#17201e] px-7 text-sm font-bold text-[#f8f7f2] hover:bg-[#293630]">Start your 14-day trial <ArrowRight className="ml-2 h-4 w-4" /></Button>
@@ -67,7 +67,7 @@ export default function Home() {
                   <div className="mb-8 flex items-center justify-between"><div className="flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#d9fa55] ring-4 ring-[#d9fa55]/30" /><span className="eyebrow text-[9px] font-medium text-[#65706b]">Growth intelligence</span></div><Sparkles className="h-4 w-4 text-[#7c9b1e]" /></div>
                   <div className="rounded-xl border border-[#17201e]/10 bg-[#fdfdfb] p-5">
                     <p className="eyebrow text-[9px] text-[#65706b]">Your next opportunity</p>
-                    <p className="mt-3 text-[20px] font-bold leading-7 tracking-[-0.04em]">Connect a store, set a goal, and turn sales activity into an ordered action plan.</p>
+                    <p className="mt-3 text-[20px] font-bold leading-7 tracking-[-0.04em]">Connect a store, set a goal, and turn real evidence into an approved action plan.</p>
                     <div className="mt-7 flex items-end gap-2" aria-hidden="true">{[31, 46, 39, 64, 52, 83, 69, 100].map((height, index) => <span key={index} className="w-full rounded-t-sm bg-[#d9fa55]" style={{ height: `${height}px`, opacity: 0.45 + index * 0.06 }} />)}</div>
                   </div>
                   <div className="mt-3 grid grid-cols-3 gap-3">{[["Observe", "Sales signals"], ["Prioritize", "Best next move"], ["Measure", "Revenue change"]].map(([label, detail], index) => <div key={label} className="rounded-xl border border-[#17201e]/10 bg-[#fdfdfb] p-3"><span className="font-mono text-[10px] text-[#7c9b1e]">0{index + 1}</span><p className="mt-4 text-xs font-bold tracking-[-0.03em]">{label}</p><p className="mt-1 text-[10px] leading-4 text-[#65706b]">{detail}</p></div>)}</div>

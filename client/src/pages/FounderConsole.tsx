@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 const features = [
   ["ai_recommendations", "AI recommendations"],
+  ["ai_actions", "AI Action Studio"],
   ["outcome_measurement", "Outcome measurement"],
   ["beta_feedback", "Beta feedback"],
 ] as const;

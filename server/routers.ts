@@ -6,6 +6,8 @@ import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import {
   getAnalyticsOverview,
+  getCatalogProductsForUser,
+  getMonthlyAiActionDraftCount,
   getBetaFeedbackForUser,
   getGrowthProfile,
   isBetaFeatureEnabledForUser,
@@ -23,7 +25,9 @@ import { createBillingPortal, createSubscriptionCheckout, getBillingAccess } fro
 import { permitsBetaFeature } from "./accessRules";
 import { betaFeedbackInputSchema } from "./betaFeedback";
 import { beginShopifyAuthorization, syncShopifyStore } from "./shopify";
-import { approveRecommendationForUser, completeRecommendationForUser, generateRecommendationsForUser } from "./recommendationEngine";
+import { approveRecommendationForUser, completeRecommendationForUser, dismissRecommendationForUser, generateRecommendationsForUser } from "./recommendationEngine";
+import { getStoreIntelligenceForUser, refreshStoreIntelligence } from "./storeIntelligence";
+import { generatePositioningDraft, generateProductDescriptionDraft, listAiActionDraftsForUser, updateAiActionDraftStatus } from "./aiActionStudio";
 
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
@@ -59,10 +63,24 @@ export const appRouter = router({
       brandSummary: z.string().trim().max(1200).optional(),
       targetCustomer: z.string().trim().max(600).optional(),
       brandVoice: z.string().trim().max(120).optional(),
+      brandValues: z.string().trim().max(600).optional(),
+      positioning: z.string().trim().max(1000).optional(),
+      differentiators: z.string().trim().max(1000).optional(),
     })).mutation(({ ctx, input }) => updateGrowthProfile({ userId: ctx.user.id, ...input })),
+  }),
+  intelligence: router({
+    overview: protectedProcedure.query(({ ctx }) => getStoreIntelligenceForUser(ctx.user.id)),
+    refresh: protectedProcedure.mutation(async ({ ctx }) => {
+      const overview = await getAnalyticsOverview(ctx.user.id);
+      if (!overview.store) throw new TRPCError({ code: "NOT_FOUND", message: "Connect a Shopify store first" });
+      return refreshStoreIntelligence(overview.store.id);
+    }),
   }),
   analytics: router({
     overview: protectedProcedure.query(({ ctx }) => getAnalyticsOverview(ctx.user.id)),
+  }),
+  catalog: router({
+    products: protectedProcedure.query(({ ctx }) => getCatalogProductsForUser(ctx.user.id)),
   }),
   recommendations: router({
     list: protectedProcedure.query(({ ctx }) => getRecommendationsForUser(ctx.user.id)),
@@ -73,6 +91,7 @@ export const appRouter = router({
       return generateRecommendationsForUser(ctx.user.id);
     }),
     approve: protectedProcedure.input(z.object({ recommendationId: z.number().int().positive() })).mutation(({ ctx, input }) => approveRecommendationForUser(ctx.user.id, input.recommendationId)),
+    dismiss: protectedProcedure.input(z.object({ recommendationId: z.number().int().positive() })).mutation(({ ctx, input }) => dismissRecommendationForUser(ctx.user.id, input.recommendationId)),
     complete: protectedProcedure.input(z.object({ recommendationId: z.number().int().positive() })).mutation(async ({ ctx, input }) => {
       const billing = await getBillingAccess(ctx.user.id);
       if (!permitsBetaFeature(billing.accessSource, await isBetaFeatureEnabledForUser(ctx.user.id, "outcome_measurement"))) throw new TRPCError({ code: "FORBIDDEN", message: "Outcome measurement is currently disabled for this beta workspace" });
@@ -81,6 +100,26 @@ export const appRouter = router({
   }),
   impact: router({
     list: protectedProcedure.query(({ ctx }) => getRecommendationActionsForUser(ctx.user.id)),
+  }),
+  aiActions: router({
+    list: protectedProcedure.query(({ ctx }) => listAiActionDraftsForUser(ctx.user.id)),
+    generateProductDescription: protectedProcedure.input(z.object({ productId: z.number().int().positive(), recommendationId: z.number().int().positive().optional() })).mutation(async ({ ctx, input }) => {
+      const billing = await getBillingAccess(ctx.user.id);
+      if (!billing.hasAccess) throw new TRPCError({ code: "FORBIDDEN", message: "Start a trial or subscription to generate a custom AI action" });
+      if (!permitsBetaFeature(billing.accessSource, await isBetaFeatureEnabledForUser(ctx.user.id, "ai_actions"))) throw new TRPCError({ code: "FORBIDDEN", message: "AI actions are currently disabled for this beta workspace" });
+      const monthlyLimit = billing.accessSource === "owner" || billing.accessSource === "beta" ? Number.POSITIVE_INFINITY : billing.plan === "growth" ? 25 : 5;
+      if (await getMonthlyAiActionDraftCount(ctx.user.id) >= monthlyLimit) throw new TRPCError({ code: "FORBIDDEN", message: `Your ${billing.plan === "growth" ? "Growth" : "Pro"} plan has reached its monthly custom AI draft allowance. Upgrade or wait for your next billing month.` });
+      return generateProductDescriptionDraft({ userId: ctx.user.id, ...input });
+    }),
+    generatePositioning: protectedProcedure.mutation(async ({ ctx }) => {
+      const billing = await getBillingAccess(ctx.user.id);
+      if (!billing.hasAccess) throw new TRPCError({ code: "FORBIDDEN", message: "Start a trial or subscription to generate a custom AI action" });
+      if (!permitsBetaFeature(billing.accessSource, await isBetaFeatureEnabledForUser(ctx.user.id, "ai_actions"))) throw new TRPCError({ code: "FORBIDDEN", message: "AI actions are currently disabled for this beta workspace" });
+      const monthlyLimit = billing.accessSource === "owner" || billing.accessSource === "beta" ? Number.POSITIVE_INFINITY : billing.plan === "growth" ? 25 : 5;
+      if (await getMonthlyAiActionDraftCount(ctx.user.id) >= monthlyLimit) throw new TRPCError({ code: "FORBIDDEN", message: `Your ${billing.plan === "growth" ? "Growth" : "Pro"} plan has reached its monthly custom AI draft allowance. Upgrade or wait for your next billing month.` });
+      return generatePositioningDraft({ userId: ctx.user.id });
+    }),
+    review: protectedProcedure.input(z.object({ draftId: z.number().int().positive(), status: z.enum(["approved", "rejected"]) })).mutation(({ ctx, input }) => updateAiActionDraftStatus({ userId: ctx.user.id, ...input })),
   }),
   foundingBeta: router({
     me: protectedProcedure.query(({ ctx }) => getBetaFeedbackForUser(ctx.user.id)),
@@ -93,7 +132,7 @@ export const appRouter = router({
   founder: router({
     overview: adminProcedure.query(() => getOwnerOverview()),
     inviteBeta: adminProcedure.input(z.object({ email: z.string().trim().email().max(320) })).mutation(({ ctx, input }) => createFoundingBetaInvite(ctx.user.id, input.email)),
-    setBetaFeature: adminProcedure.input(z.object({ betaInviteId: z.number().int().positive(), featureKey: z.enum(["ai_recommendations", "outcome_measurement", "beta_feedback"]), enabled: z.boolean() })).mutation(({ input }) => setBetaFeatureOverride(input.betaInviteId, input.featureKey, input.enabled)),
+    setBetaFeature: adminProcedure.input(z.object({ betaInviteId: z.number().int().positive(), featureKey: z.enum(["ai_recommendations", "ai_actions", "outcome_measurement", "beta_feedback"]), enabled: z.boolean() })).mutation(({ input }) => setBetaFeatureOverride(input.betaInviteId, input.featureKey, input.enabled)),
   }),
   shopify: router({
     begin: protectedProcedure.input(z.object({ shopDomain: z.string().trim().min(1).max(255) })).mutation(({ ctx, input }) => beginShopifyAuthorization(ctx.user.id, input.shopDomain, `${ctx.req.protocol}://${ctx.req.get("host")}`)),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCandidates, rankCandidates } from "./recommendationEngine";
+import { buildCandidates, isDraftCapableRecommendationCategory, rankCandidates } from "./recommendationEngine";
 
 describe("recommendation evidence eligibility", () => {
   it("only surfaces categories supported by the supplied aggregate signals", () => {
@@ -45,5 +45,12 @@ describe("recommendation evidence eligibility", () => {
       { category: "margin_erosion", evidence: "C", maximumImpact: 40, effortLevel: "medium" },
     ]);
     expect(ranked.map(candidate => candidate.maximumImpact)).toEqual([85, 40, 15]);
+  });
+
+  it("allows linked custom drafts only for catalog-copy and pricing opportunities", () => {
+    expect(isDraftCapableRecommendationCategory("product_copy")).toBe(true);
+    expect(isDraftCapableRecommendationCategory("pricing")).toBe(true);
+    expect(isDraftCapableRecommendationCategory("high_refunds")).toBe(false);
+    expect(isDraftCapableRecommendationCategory("abandoned_cart")).toBe(false);
   });
 });

@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { startLogin } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { Activity, ArrowUpRight, Crown, CreditCard, LayoutDashboard, Lightbulb, LogOut, PanelLeft, Settings, Sparkles, Store } from "lucide-react";
+import { Activity, ArrowUpRight, Crown, CreditCard, LayoutDashboard, Lightbulb, LogOut, PanelLeft, Settings, Sparkles, Store, WandSparkles } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -32,6 +32,7 @@ const menuItems = [
   { icon: Sparkles, label: "Growth Profile", path: "/app/profile" },
   { icon: Store, label: "Connect store", path: "/app/connect" },
   { icon: Lightbulb, label: "Action feed", path: "/app/actions" },
+  { icon: WandSparkles, label: "AI Action Studio", path: "/app/ai-studio" },
   { icon: Activity, label: "Impact tracker", path: "/app/impact" },
 ];
 

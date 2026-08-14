@@ -1,6 +1,7 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Actions from "@/pages/Actions";
+import AIStudio from "@/pages/AIStudio";
 import Billing from "@/pages/Billing";
 import ConnectStore from "@/pages/ConnectStore";
 import Dashboard from "@/pages/Dashboard";
@@ -26,6 +27,7 @@ function Router() {
       <Route path={"/app/beta"} component={FoundingBeta} />
       <Route path={"/app/connect"} component={ConnectStore} />
       <Route path={"/app/actions"} component={Actions} />
+      <Route path={"/app/ai-studio"} component={AIStudio} />
       <Route path={"/app/impact"} component={Impact} />
       <Route path={"/app/billing"} component={Billing} />
       <Route path={"/app/settings"} component={Settings} />

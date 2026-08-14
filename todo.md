@@ -31,3 +31,18 @@
 - [x] Update pricing to two subscription plans with a full-access 14-day trial: Pro at $29/month and Growth at $79/month.
 - [x] Implement checkpoint-specific Founding Beta feedback, including day-seven willingness-to-pay options, and test its structured persistence contract.
 - [x] Add a deterministic persistence-contract test for day-seven Founding Beta feedback fields.
+- [x] Make the Opportunity Engine the central paid product loop: Scan → Recommend → Generate → Approve → Measure.
+- [x] Add a persistent Business Brain that records approved brand context, goals, scan evidence, recommendation decisions, and measured outcomes without inventing data.
+- [x] Add a transparent Growth Score with component-level explanations, evidence coverage, and an explicit insufficient-data state.
+- [x] Add custom AI action drafts for product descriptions and positioning, with selection, brand-voice preservation, and merchant approval before any change.
+- [x] Expand store-scan evidence to explain product, catalog, pricing, SEO, collection, conversion, and content opportunities based only on connected-store data.
+- [x] Reprice Cresna Pro to $19/month and Cresna Growth to $49/month while preserving the 14-day full-access trial and unrestricted owner access.
+- [x] Revise the paid feature comparison so each plan clearly earns its price and does not promise unimplemented capabilities.
+- [x] Connect approved Opportunity Engine items directly to custom AI draft generation so Scan → Recommend → Generate → Approve → Measure is one merchant workflow.
+- [x] Record measured revenue outcomes and explicit recommendation dismissals in the Business Brain event history.
+- [x] Implement positioning drafts with Business Brain context and merchant review alongside product-description drafts.
+- [x] Sync current Shopify catalog pricing and add evidence-bound pricing opportunities without guessing pricing strategy.
+- [x] Gate Growth-only AI-action capacity and deeper catalog-intelligence capabilities in code, or remove any unimplemented plan distinction from paid copy.
+- [x] Scope recommendation-to-AI generation to categories with a truthful reviewable draft, and provide concrete generation guidance for every other approved recommendation type.
+- [x] Add deterministic coverage for approved-recommendation handoff into the linked custom-AI draft workflow.
+- [x] Add a deterministic server-side contract test for linked draft metadata, supported recommendation categories, and recommendation ID propagation.

@@ -9,4 +9,11 @@ describe("Stripe subscription catalog", () => {
       expect(plan.currency).toBe("usd");
     }
   });
+
+  it("keeps the launch prices at $19 for Pro and $49 for Growth", () => {
+    expect(subscriptionPlans.pro.monthlyAmount).toBe(1900);
+    expect(subscriptionPlans.pro.annualAmount).toBe(19000);
+    expect(subscriptionPlans.growth.monthlyAmount).toBe(4900);
+    expect(subscriptionPlans.growth.annualAmount).toBe(49000);
+  });
 });

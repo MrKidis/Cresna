@@ -1,0 +1,1 @@
+ALTER TABLE `recommendations` MODIFY COLUMN `category` enum('underperforming_sku','high_refunds','abandoned_cart','margin_erosion','restock','product_copy','pricing') NOT NULL;
