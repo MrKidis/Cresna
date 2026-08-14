@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createHmac } from "crypto";
-import { buildShopifyAuthorizationUrl, validateShopDomain, verifyOAuthCallback } from "./shopify";
+import { buildShopifyAuthorizationUrl, isShopifyDisconnectTopic, validateShopDomain, verifyOAuthCallback } from "./shopify";
 
 describe("Shopify authorization contract", () => {
   it("normalizes a valid myshopify domain and rejects arbitrary redirect domains", () => {
@@ -25,5 +25,11 @@ describe("Shopify authorization contract", () => {
     const hmac = createHmac("sha256", secret).update(message).digest("hex");
     expect(() => verifyOAuthCallback({ ...unsigned, hmac }, secret)).not.toThrow();
     expect(() => verifyOAuthCallback({ ...unsigned, hmac: "0".repeat(64) }, secret)).toThrow("Invalid Shopify authorization signature");
+  });
+
+  it("recognizes an app-uninstalled lifecycle event as a store-disconnect transition", () => {
+    expect(isShopifyDisconnectTopic("app/uninstalled")).toBe(true);
+    expect(isShopifyDisconnectTopic("orders/create")).toBe(false);
+    expect(isShopifyDisconnectTopic(undefined)).toBe(false);
   });
 });
