@@ -48,18 +48,44 @@ export function buildOwnerAssistantMessages(question: string, overview: OwnerOve
   ];
 }
 
+export function buildOwnerAssistantFallback(question: string, overview: OwnerOverviewSummaryInput) {
+  const snapshot = summarizeOwnerOverview(overview);
+  const activeBeta = snapshot.betaInvitationCounts.active || 0;
+  const completionRate = snapshot.recommendationsGenerated > 0
+    ? Math.round((snapshot.recommendationsCompleted / snapshot.recommendationsGenerated) * 100)
+    : null;
+  const approvalRate = snapshot.aiDraftsGenerated > 0
+    ? Math.round((snapshot.aiDraftsApproved / snapshot.aiDraftsGenerated) * 100)
+    : null;
+  const nextStep = snapshot.connectedStores === 0
+    ? "Prioritize the Shopify connection and consent journey: no store evidence exists yet."
+    : snapshot.recommendationsGenerated === 0
+      ? "Prioritize the first evidence scan for connected workspaces before adding more product surface area."
+      : snapshot.outcomesMeasured === 0
+        ? "Prioritize getting merchants from approved actions to measured outcomes so Cresna can learn from real results."
+        : "Review the strongest measured outcome and turn its evidence pattern into the next product or onboarding experiment.";
+
+  return `## Verified platform snapshot\n\nI could not obtain a narrative model response for this question, so I am using Cresna's stored aggregate metrics only.\n\n- **Users:** ${snapshot.totalUsers}\n- **Connected stores:** ${snapshot.connectedStores}\n- **Active beta testers:** ${activeBeta}\n- **Opportunities generated:** ${snapshot.recommendationsGenerated}${completionRate === null ? "" : ` (${completionRate}% completed)`}\n- **AI drafts:** ${snapshot.aiDraftsGenerated}${approvalRate === null ? "" : ` (${approvalRate}% approved)`}\n- **Measured outcomes:** ${snapshot.outcomesMeasured}\n- **Structured beta feedback entries:** ${snapshot.betaFeedbackEntries}\n\n### Suggested operating focus\n${nextStep}\n\n> Your question was recorded only for this response: “${question.trim() || "Platform review"}”. This fallback does not access or expose merchant-level, customer, order, catalog, or payment data.`;
+}
+
 export async function answerOwnerAssistant(question: string) {
   const overview = await getOwnerOverview();
-  const response = await invokeLLM({
-    model: "gpt-5-mini",
-    maxTokens: 700,
-    messages: buildOwnerAssistantMessages(question, overview),
-  });
-  const content = response.choices[0]?.message.content;
-  const answer = typeof content === "string"
-    ? content.trim()
-    : content?.map(part => part.type === "text" ? part.text : "").join("\n").trim();
+  try {
+    const response = await invokeLLM({
+      model: "gpt-5-mini",
+      maxTokens: 700,
+      messages: buildOwnerAssistantMessages(question, overview),
+    });
+    const content = response.choices[0]?.message.content;
+    const answer = typeof content === "string"
+      ? content.trim()
+      : Array.isArray(content) ? content.map(part => part.type === "text" ? part.text : "").join("\n").trim() : "";
 
-  if (!answer) throw new Error("The owner assistant did not return a usable response");
-  return { answer, snapshot: summarizeOwnerOverview(overview) };
+    if (answer) return { answer, snapshot: summarizeOwnerOverview(overview) };
+    console.warn("[Owner Assistant] Provider returned no usable content; using aggregate fallback.");
+  } catch (error) {
+    console.warn("[Owner Assistant] Provider request failed; using aggregate fallback.", error);
+  }
+
+  return { answer: buildOwnerAssistantFallback(question, overview), snapshot: summarizeOwnerOverview(overview) };
 }

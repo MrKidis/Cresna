@@ -50,6 +50,7 @@
 - [x] Move founder controls into a separate Owner Panel and add aggregate, privacy-preserving owner intelligence for users, store connections, subscriptions, trials, and beta feedback.
 - [ ] Add a normal unpaid-user preview that shows the true no-subscription state without fabricating user or store data.
 - [ ] Add dark mode, theme persistence, and premium visual refinement across the public site and workspace.
+- [x] Fix the owner-only assistant so incomplete provider responses produce a safe, useful aggregate-data fallback instead of a mutation error.
 - [x] Replace the current Cresna mark with a polished, image-based app logo and add a clearly labelled Shopify brand mark to the consent flow.
 - [x] Expand the Shopify connection consent experience with a plain-language data-sharing list, access purpose, exclusions, and revoke/disconnect explanation.
 - [x] Increase the paid AI-action capacity, make all plan limits explicit, and retain unrestricted owner access.

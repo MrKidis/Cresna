@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildOwnerAssistantMessages, summarizeOwnerOverview } from "./ownerAssistant";
+import { buildOwnerAssistantFallback, buildOwnerAssistantMessages, summarizeOwnerOverview } from "./ownerAssistant";
 
 const overview = {
   totalUsers: 12,
@@ -37,5 +37,13 @@ describe("owner assistant privacy boundary", () => {
     expect(messages[0].content).toContain("Never infer, reveal, request, or fabricate");
     expect(messages[1].content).toContain('"connectedStores":8');
     expect(messages[1].content).not.toContain("tester@example.com");
+  });
+
+  it("provides a safe, useful aggregate fallback when the model returns no text", () => {
+    const fallback = buildOwnerAssistantFallback("What should I do this week?", overview);
+    expect(fallback).toContain("**Users:** 12");
+    expect(fallback).toContain("**Connected stores:** 8");
+    expect(fallback).toContain("Suggested operating focus");
+    expect(fallback).not.toContain("tester@example.com");
   });
 });
