@@ -91,11 +91,11 @@
 - [x] Enforce beta-expiry final-feedback completion before an expired tester can begin paid checkout, with a server-side checkout guard and a direct user-interface handoff back to the final feedback page.
 - [x] Fix the first-use Growth Profile query so an authenticated workspace with no saved profile receives a stable empty-state contract rather than an undefined query result.
 - [x] Prepare a sanitized GitHub/Vercel handoff package with deployment documentation, environment-variable inventory, Stripe/RevenueCat webhook-path guidance, and no committed secrets.
-- [ ] Audit and prepare a GitHub Pages-compatible Cresna frontend export while retaining a separate secure API deployment for OAuth, Stripe, RevenueCat webhooks, user data, and server-side AI.
+- [x] Audit and prepare a GitHub Pages-compatible Cresna frontend export while retaining a separate secure API deployment for OAuth, Stripe, RevenueCat webhooks, user data, and server-side AI. Superseded by the user-selected unified Vercel deployment.
 - [ ] Resolve the RevenueCat “Select an offering” draft-state issue by attaching the Cresna paywall only after actual Stripe Web Billing packages are present, and document why this cannot be completed with no connected products.
-- [ ] Correct authenticated workspace navigation overlap, stop unintended tab-navigation scroll resets, and standardize concise icon-led controls across desktop and mobile.
-- [ ] Configure the Cresna growth-arrow mark as the repository and browser favicon with a portable public asset reference.
+- [x] Correct authenticated workspace navigation overlap, stop unintended tab-navigation scroll resets, and standardize concise icon-led controls across desktop and mobile.
+- [x] Configure the Cresna growth-arrow mark as the repository and browser favicon with a portable public asset reference.
 - [ ] Plan a production authentication migration with Google and Microsoft OAuth buttons, no password email sign-up, and a server-side session/API implementation suitable for the non-Manus deployment.
-- [ ] Document a durable AI architecture that protects user data, uses server-side tools and controlled memory, and does not claim GitHub Pages can host a persistent AI service on its own.
+- [x] Document a durable AI architecture that protects user data, uses server-side tools and controlled memory, and does not claim GitHub Pages can host a persistent AI service on its own.
 - [ ] Configure and document a unified GitHub-to-Vercel deployment in which one Vercel domain serves Cresna’s frontend, secure API routes, OAuth callbacks, Stripe/RevenueCat webhooks, database access, and server-side AI.
 - [x] Provide a production activation checklist for an externally hosted database, Google OAuth, Microsoft OAuth, Stripe/RevenueCat credentials, and a server-side AI provider, with secret values entered only through Vercel settings.
