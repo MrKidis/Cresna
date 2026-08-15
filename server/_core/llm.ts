@@ -212,10 +212,20 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-const openRouterConfigured = Boolean(process.env.AI_PROVIDER_API_KEY?.trim());
+export type LLMProvider = "openrouter" | "ollama" | "manus";
+
+export const resolveLLMProvider = (value = process.env.AI_PROVIDER): LLMProvider => {
+  const normalized = value?.trim().toLowerCase();
+  return normalized === "ollama" ? "ollama" : normalized === "manus" ? "manus" : "openrouter";
+};
+
+const llmProvider = resolveLLMProvider();
+const openRouterConfigured = llmProvider === "openrouter" && Boolean(process.env.AI_PROVIDER_API_KEY?.trim());
 const openRouterBaseUrl = "https://openrouter.ai/api/v1";
+const ollamaBaseUrl = (process.env.OLLAMA_BASE_URL?.trim() || "http://ollama:11434").replace(/\/$/, "");
 
 const resolveApiUrl = () => {
+  if (llmProvider === "ollama") return `${ollamaBaseUrl}/v1/chat/completions`;
   if (openRouterConfigured) return `${openRouterBaseUrl}/chat/completions`;
   return ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
     ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
@@ -223,10 +233,10 @@ const resolveApiUrl = () => {
 };
 
 const resolveApiKey = () =>
-  openRouterConfigured ? process.env.AI_PROVIDER_API_KEY!.trim() : ENV.forgeApiKey;
+  llmProvider === "ollama" ? "ollama-local" : openRouterConfigured ? process.env.AI_PROVIDER_API_KEY!.trim() : ENV.forgeApiKey;
 
 const assertApiKey = () => {
-  if (!resolveApiKey()) {
+  if (llmProvider !== "ollama" && !resolveApiKey()) {
     throw new Error("An AI provider key is not configured");
   }
 };
@@ -447,9 +457,11 @@ export type ModelsResponse = {
 export async function listLLMModels(): Promise<ModelsResponse> {
   assertApiKey();
 
-  const url = openRouterConfigured
-    ? `${openRouterBaseUrl}/models`
-    : ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
+  const url = llmProvider === "ollama"
+    ? `${ollamaBaseUrl}/v1/models`
+    : openRouterConfigured
+      ? `${openRouterBaseUrl}/models`
+      : ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
       ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/models`
       : "https://forge.manus.im/v1/models";
 

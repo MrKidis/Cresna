@@ -1,0 +1,15 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    restart: unless-stopped
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - cresna-ai
+
+networks:
+  cresna-ai:
+    internal: true
+
+volumes:
+  ollama-data:

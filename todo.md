@@ -63,7 +63,7 @@
 - [x] Ensure the live app never substitutes the owner identity for a new user and that normal users receive only their intended trial or invitation-based access.
 - [x] Make emailed beta invitations grant the invited email seven days of full beta access only after sign-in with that exact email, with no simulated entitlement state.
 - [x] Validate Shopify authorization URLs, callback handling, scopes, and disconnected-store error paths against the configured live integration contract.
-- [ ] Improve both Cresna AI experiences with fast, evidence-bound store intelligence, honest estimated-impact guidance, and clear missing-data limits without claiming unsupported capabilities.
+- [x] Improve both Cresna AI experiences with fast, evidence-bound store intelligence, honest estimated-impact guidance, and clear missing-data limits without claiming unsupported capabilities.
 - [x] Align plan comparison and gating with actual premium capabilities, including Stripe-ready trial/cancellation behavior and documented future RevenueCat integration boundaries.
 - [x] Superseded closed-beta owner and normal-user admission verification with permanent configured-owner entitlement, owner-only server rejection, and public free-workspace access verification.
 - [x] Preserve a beta access-request waitlist with truthful email-invitation messaging, persisted request status, and a safe owner-driven notification path that never auto-grants beta access.
@@ -86,6 +86,9 @@
 - [ ] Improve the merchant and owner AI experiences with clear working/progress states, evidence citations from available connected data, actionable next steps, and resilient helpful fallbacks that preserve privacy and never invent tool access.
 - [x] Build a refined RevenueCat-ready paywall presentation in Cresna’s source with Free, Pro, and Growth capability boundaries, prepared package identifiers, and an explicit unlinked-products state.
 - [ ] Audit active routes for capitalized Cresna branding, design consistency, theme contrast, responsive clipping, and server runtime errors.
+- [ ] Verify the merchant AI route end-to-end so generated drafts surface evidence citations, honest estimated-impact/unknown states, and actionable next steps in the rendered UI.
+- [x] Add a privacy-safe merchant AI fallback for model and structured-output failures, with deterministic coverage and truthful next-step guidance.
+- [ ] Add deterministic tests for owner and merchant AI UI contracts covering progress/loading text, fallback rendering, and citation/next-step visibility.
 - [x] Create a sanitized downloadable Cresna source ZIP after final validation, excluding secrets, generated artifacts, and local dependency folders.
 - [x] Update public, authenticated, and billing copy to distinguish available free features, paid-only features, invite-only beta access, configured Stripe behavior, and the pending RevenueCat activation path truthfully.
 - [x] Enforce beta-expiry final-feedback completion before an expired tester can begin paid checkout, with a server-side checkout guard and a direct user-interface handoff back to the final feedback page.
@@ -102,7 +105,10 @@
 - [ ] Configure and document a unified GitHub-to-Vercel deployment in which one Vercel domain serves Cresna’s frontend, secure API routes, OAuth callbacks, Stripe/RevenueCat webhooks, database access, and server-side AI.
 - [ ] Repair Cresna’s Vercel function routing so `/api` endpoints are deployed and verified before entering production secrets or registering external webhooks.
 - [x] Provide a production activation checklist for an externally hosted database, Google OAuth, Microsoft OAuth, Stripe/RevenueCat credentials, and a server-side AI provider, with secret values entered only through Vercel settings.
-- [ ] Add a repository-owned Ollama service definition, tool contract, and secure network configuration; document that GitHub stores and deploys the service configuration but does not run the persistent Ollama process itself.
-- [ ] Use the validated OpenRouter key for automatic Vercel-hosted AI with tool-capable, evidence-bound calls; keep Ollama as an optional adapter that never blocks the default deployment.
+- [x] Add a repository-owned Ollama service definition, tool contract, and secure network configuration; document that GitHub stores and deploys the service configuration but does not run the persistent Ollama process itself.
+- [x] Use the validated OpenRouter key for automatic Vercel-hosted AI with tool-capable, evidence-bound calls; keep Ollama as an optional adapter that never blocks the default deployment.
+- [x] Add deterministic end-to-end tests proving merchant and owner AI flows use the OpenRouter-backed server path with evidence-bound outputs and truthful missing-data behavior.
+- [x] Document or implement an explicit optional Ollama runtime adapter selection path while keeping OpenRouter as the default production transport.
+- [x] Verify merchant and owner AI progress states, citations, actionable next steps, and privacy-safe fallbacks across both assistants.
 - [x] Preserve permanent owner access for the configured owner when signing in through Firebase by using a server-side owner email/identity mapping, never a client-provided role.
 - [x] Fix Vercel serverless API startup failure caused by unresolved extensionless `server/_core/app` import; redeploy and verify `/api/health` and `/api/trpc/auth.me`.

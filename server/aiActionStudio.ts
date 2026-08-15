@@ -1,10 +1,10 @@
 import { and, desc, eq } from "drizzle-orm";
 import { aiActionDrafts, businessBrainEvents, products, recommendations } from "../drizzle/schema.ts";
-import { invokeLLM } from "./_core/llm.ts";
+import { invokeLLM, type Message } from "./_core/llm.ts";
 import { getDb, getGrowthProfile, getPrimaryStoreForUser } from "./db.ts";
 import { isDraftCapableRecommendationCategory } from "./recommendationEngine.ts";
 
-type DraftPayload = { descriptionHtml?: string; seoTitle?: string; seoDescription?: string; notes?: string[]; positioning?: string; homepageHeadline?: string; proofPoints?: string[]; missingEvidence?: string[]; evidenceUsed?: string[] };
+type DraftPayload = { descriptionHtml?: string; seoTitle?: string; seoDescription?: string; notes?: string[]; positioning?: string; homepageHeadline?: string; proofPoints?: string[]; missingEvidence?: string[]; evidenceUsed?: string[]; estimatedImpact?: { level: "low" | "medium" | "high" | "unknown"; rationale: string } };
 
 function parseDraft(value: string): DraftPayload | null {
   try {
@@ -30,6 +30,34 @@ export function parseStructuredDraft(content: unknown, errorMessage: string) {
   const draft = parseDraft(text);
   if (!draft) throw new Error(errorMessage);
   return draft;
+}
+
+export function buildMerchantAiMessages(action: "product_description" | "positioning", evidence: unknown): Message[] {
+  const actionLabel = action === "product_description" ? "product-content" : "brand-positioning";
+  return [
+    {
+      role: "system",
+      content: `You create cautious ecommerce ${actionLabel} drafts for Cresna. Use only facts in the supplied evidence. Do not invent market claims, customer research, comparisons, awards, proof, testimonials, materials, certifications, dimensions, availability, outcomes, reviews, or guarantees. If essential context is missing, identify it in missingEvidence or notes rather than guessing. The output is a private review draft, never a claim of market truth. evidenceUsed must name only supplied source fields that actually shaped the draft. estimatedImpact must use level \"unknown\" unless the supplied evidence includes measured outcomes; never invent a numeric revenue forecast. Explain the estimate or unknown state in rationale. Preserve approved brand voice when supplied.`,
+    },
+    { role: "user", content: JSON.stringify(evidence) },
+  ];
+}
+
+export function buildMerchantAiFallback(action: "product_description" | "positioning", evidence: Record<string, unknown>): DraftPayload {
+  const sourceFields = action === "product_description"
+    ? ["product.title", "product.vendor", "product.productType", "product.currentDescription", "businessBrain.brandVoice", "businessBrain.positioning"]
+    : ["businessBrain.brandSummary", "businessBrain.targetCustomer", "businessBrain.brandVoice", "businessBrain.currentPositioning", "businessBrain.differentiators"];
+  const evidenceUsed = sourceFields.filter(field => {
+    const [group, key] = field.split(".");
+    const value = (evidence[group] as Record<string, unknown> | undefined)?.[key];
+    return typeof value === "string" ? value.trim().length > 0 : Boolean(value);
+  });
+  const nextStep = action === "product_description"
+    ? "Retry after the AI provider is available; Cresna has not published or changed your Shopify store."
+    : "Retry after the AI provider is available; review your Business Brain before accepting a positioning direction.";
+  return action === "product_description"
+    ? { descriptionHtml: "", seoTitle: "", seoDescription: "", notes: [`Cresna could not complete this draft. ${nextStep}`], evidenceUsed, estimatedImpact: { level: "unknown", rationale: "No generated draft or measured outcome evidence is available." } }
+    : { positioning: "", homepageHeadline: "", proofPoints: [], missingEvidence: [`Cresna could not complete this draft. ${nextStep}`], evidenceUsed, estimatedImpact: { level: "unknown", rationale: "No generated draft or measured outcome evidence is available." } };
 }
 
 export function buildLinkedDraftMetadata(recommendation?: { id: number; category: string }) {
@@ -73,13 +101,12 @@ export async function generateProductDescriptionDraft(input: { userId: number; p
       differentiators: profile?.differentiators || "",
     },
   };
-  const result = await invokeLLM({
-    model: "gpt-5-mini",
-    max_tokens: 1800,
-    messages: [
-      { role: "system", content: "You create safe ecommerce product-content drafts for Cresna. Use only facts in the supplied product and Business Brain. Preserve the approved voice when supplied. Do not invent materials, certifications, dimensions, availability, outcomes, reviews, comparisons, or guarantees. Return reviewable concise HTML only for descriptionHtml using p, h3, and ul tags. Notes must explicitly identify any important missing product facts rather than guessing. evidenceUsed must name only supplied source fields that actually shaped the draft, such as product.title, product.vendor, product.productType, product.currentDescription, businessBrain.brandVoice, or businessBrain.positioning." },
-      { role: "user", content: JSON.stringify(evidence) },
-    ],
+  let draft: DraftPayload;
+  try {
+    const result = await invokeLLM({
+      model: "gpt-5-mini",
+      max_tokens: 1800,
+      messages: buildMerchantAiMessages("product_description", evidence),
     response_format: {
       type: "json_schema",
       json_schema: {
@@ -93,14 +120,26 @@ export async function generateProductDescriptionDraft(input: { userId: number; p
             seoDescription: { type: "string" },
             notes: { type: "array", items: { type: "string" }, maxItems: 5 },
             evidenceUsed: { type: "array", items: { type: "string" }, maxItems: 8 },
+            estimatedImpact: {
+              type: "object",
+              properties: {
+                level: { type: "string", enum: ["low", "medium", "high", "unknown"] },
+                rationale: { type: "string" },
+              },
+              required: ["level", "rationale"],
+              additionalProperties: false,
+            },
           },
-          required: ["descriptionHtml", "seoTitle", "seoDescription", "notes", "evidenceUsed"],
+          required: ["descriptionHtml", "seoTitle", "seoDescription", "notes", "evidenceUsed", "estimatedImpact"],
           additionalProperties: false,
         },
       },
     },
-  });
-  const draft = parseStructuredDraft(result.choices[0]?.message.content, "Cresna could not create a structured AI draft");
+    });
+    draft = parseStructuredDraft(result.choices[0]?.message.content, "Cresna could not create a structured AI draft");
+  } catch {
+    draft = buildMerchantAiFallback("product_description", evidence);
+  }
   const inserted = await db.insert(aiActionDrafts).values({
     storeId: store.id,
     recommendationId: linkedDraft.recommendationId,
@@ -132,13 +171,12 @@ export async function generatePositioningDraft(input: { userId: number }) {
       differentiators: profile.differentiators || "",
     },
   };
-  const result = await invokeLLM({
-    model: "gpt-5-mini",
-    max_tokens: 1300,
-    messages: [
-      { role: "system", content: "You create cautious brand-positioning drafts for Cresna. Use only the approved Business Brain fields. Do not invent market claims, customer research, comparisons, awards, proof, testimonials, performance, or benefits not supplied by the merchant. If essential context is missing, name it in missingEvidence instead of guessing. The output is a private review draft, never a claim of market truth. evidenceUsed must name only the approved Business Brain fields that shaped the draft." },
-      { role: "user", content: JSON.stringify(evidence) },
-    ],
+  let draft: DraftPayload;
+  try {
+    const result = await invokeLLM({
+      model: "gpt-5-mini",
+      max_tokens: 1300,
+      messages: buildMerchantAiMessages("positioning", evidence),
     response_format: {
       type: "json_schema",
       json_schema: {
@@ -152,14 +190,26 @@ export async function generatePositioningDraft(input: { userId: number }) {
             proofPoints: { type: "array", items: { type: "string" }, maxItems: 4 },
             missingEvidence: { type: "array", items: { type: "string" }, maxItems: 5 },
             evidenceUsed: { type: "array", items: { type: "string" }, maxItems: 8 },
+            estimatedImpact: {
+              type: "object",
+              properties: {
+                level: { type: "string", enum: ["low", "medium", "high", "unknown"] },
+                rationale: { type: "string" },
+              },
+              required: ["level", "rationale"],
+              additionalProperties: false,
+            },
           },
-          required: ["positioning", "homepageHeadline", "proofPoints", "missingEvidence", "evidenceUsed"],
+          required: ["positioning", "homepageHeadline", "proofPoints", "missingEvidence", "evidenceUsed", "estimatedImpact"],
           additionalProperties: false,
         },
       },
     },
-  });
-  const draft = parseStructuredDraft(result.choices[0]?.message.content, "Cresna could not create a structured positioning draft");
+    });
+    draft = parseStructuredDraft(result.choices[0]?.message.content, "Cresna could not create a structured positioning draft");
+  } catch {
+    draft = buildMerchantAiFallback("positioning", evidence);
+  }
   const inserted = await db.insert(aiActionDrafts).values({ storeId: store.id, actionType: "positioning", originalContent: profile.positioning || "", generatedContent: JSON.stringify(draft), inputEvidenceJson: JSON.stringify(evidence) });
   const draftId = Number(inserted[0].insertId);
   await db.insert(businessBrainEvents).values({ storeId: store.id, eventType: "draft_generated", entityType: "ai_action_draft", entityId: draftId, payloadJson: JSON.stringify({ actionType: "positioning" }) });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildOwnerAssistantFallback, buildOwnerAssistantMessages, summarizeOwnerOverview } from "./ownerAssistant";
+import { buildOwnerAssistantFallback, buildOwnerAssistantMessages, runOwnerPlatformTools, summarizeOwnerOverview } from "./ownerAssistant";
 
 const overview = {
   totalUsers: 12,
@@ -37,6 +37,13 @@ describe("owner assistant privacy boundary", () => {
     expect(messages[0].content).toContain("Never infer, reveal, request, or fabricate");
     expect(messages[1].content).toContain('"connectedStores":8');
     expect(messages[1].content).not.toContain("tester@example.com");
+  });
+
+  it("calculates aggregate rates and prioritizes the next platform experiment", () => {
+    expect(runOwnerPlatformTools(overview)).toEqual({
+      rates: { recommendationCompletionRate: 25, aiDraftApprovalRate: 56, positiveOutcomeRate: 75 },
+      priority: { priority: "replicate_positive_pattern", rationale: "Measured outcomes exist; inspect the strongest aggregate pattern and replicate it in onboarding or product guidance." },
+    });
   });
 
   it("provides a safe, useful aggregate fallback when the model returns no text", () => {
