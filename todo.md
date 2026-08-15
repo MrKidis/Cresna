@@ -105,4 +105,4 @@
 - [ ] Add a repository-owned Ollama service definition, tool contract, and secure network configuration; document that GitHub stores and deploys the service configuration but does not run the persistent Ollama process itself.
 - [ ] Use the validated OpenRouter key for automatic Vercel-hosted AI with tool-capable, evidence-bound calls; keep Ollama as an optional adapter that never blocks the default deployment.
 - [ ] Preserve permanent owner access for the configured owner when signing in through Firebase by using a server-side owner email/identity mapping, never a client-provided role.
-- [ ] Fix Vercel serverless API startup failure caused by unresolved extensionless `server/_core/app` import; redeploy and verify `/api/health` and `/api/trpc/auth.me`.
+- [x] Fix Vercel serverless API startup failure caused by unresolved extensionless `server/_core/app` import; redeploy and verify `/api/health` and `/api/trpc/auth.me`.
