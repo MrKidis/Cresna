@@ -3,6 +3,7 @@ import {
   createUserWithEmailAndPassword,
   getAuth,
   GoogleAuthProvider,
+  OAuthProvider,
   onIdTokenChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
@@ -36,6 +37,11 @@ export function subscribeToFirebaseToken(listener: (user: User | null) => void) 
 export function signInWithGoogle() {
   if (!firebaseAuth) throw new Error("Firebase Authentication is not configured");
   return signInWithPopup(firebaseAuth, new GoogleAuthProvider());
+}
+
+export function signInWithMicrosoft() {
+  if (!firebaseAuth) throw new Error("Firebase Authentication is not configured");
+  return signInWithPopup(firebaseAuth, new OAuthProvider("microsoft.com"));
 }
 
 export function signInWithEmail(email: string, password: string) {

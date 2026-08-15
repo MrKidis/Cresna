@@ -3,7 +3,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import type { TrpcContext } from "./context.ts";
 import { ENV } from "./env.ts";
-import { isPermanentOwner } from "../accessRules.ts";
+import { isPermanentOwnerIdentity } from "../accessRules.ts";
 
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
@@ -33,7 +33,7 @@ export const adminProcedure = t.procedure.use(
   t.middleware(async opts => {
     const { ctx, next } = opts;
 
-    if (!ctx.user || !isPermanentOwner(ctx.user.openId, ENV.ownerOpenId)) {
+    if (!ctx.user || !isPermanentOwnerIdentity(ctx.user.openId, ctx.user.email, ENV.ownerOpenId, ENV.ownerEmail)) {
       throw new TRPCError({ code: "FORBIDDEN", message: NOT_ADMIN_ERR_MSG });
     }
 

@@ -6,9 +6,8 @@ This guide turns the GitHub-connected Vercel project into a real production appl
 
 | Service | What it provides | Why Cresna needs it | Account-owned step |
 |---|---|---|---|
-| Managed MySQL/TiDB database | `DATABASE_URL` | Persists users, workspace data, Shopify data, drafts, consent history, access states, and outcomes | Create a production database and copy its TLS-enabled connection string into Vercel only. |
-| Google Cloud | Google OAuth client ID and secret | Lets users choose **Continue with Google** after the external-auth migration is implemented | Create a Web application OAuth client. |
-| Microsoft Entra | Microsoft OAuth client ID, tenant ID, and secret | Lets users choose **Continue with Microsoft** after the external-auth migration is implemented | Register a web application and create a client secret. |
+| Firebase Authentication | Google and Microsoft provider configuration plus Firebase Web/Admin settings | Browser sign-in and server-verifiable Firebase ID tokens | Enable Google and Microsoft providers in Firebase Authentication and configure the authorized Vercel domain. |
+| Managed MySQL/TiDB database | `DATABASE_URL` | Persists Cresna users, workspaces, store data, drafts, access states, and outcomes | Keep the current Drizzle-compatible database until a separately tested Firestore migration is approved. |
 | Stripe | Stripe secret key, publishable key, and webhook signing secret | Creates and manages Cresna Pro/Growth subscriptions | Create the Stripe account and products, initially in Test mode. |
 | RevenueCat | Web Billing offering, packages, entitlements, and webhook authorization | Maps verified purchases to Cresna Pro/Growth access | Link Stripe Billing products, then attach packages to the offering/paywall. |
 | AI provider | Server-only AI key | Runs Cresna’s owner and merchant intelligence from API routes | Create a provider account and project/API key with spending limits. |
@@ -21,31 +20,17 @@ The current source uses Drizzle with the `mysql2` driver. The lowest-risk first 
 
 After adding the database URL to Vercel, apply Cresna’s database migrations against **that production database**. Never point production to the current development database.
 
-## Step 2 — create Google sign-in
+## Step 2 — configure Firebase Authentication
 
-In Google Cloud Console, create a project for Cresna, configure the OAuth consent screen with Cresna’s support contact and privacy-policy URL, then create an OAuth **Web application** client. Add the final Vercel domain as an authorized origin and add this future callback URL:
+In Firebase Console, enable **Google** and **Microsoft** under Authentication → Sign-in method. Add `cresna.vercel.app` and the final production domain to Authentication → Settings → Authorized domains. The deployed Cresna auth page uses Firebase popup providers and sends the resulting ID token to Vercel in the `Authorization: Bearer …` header; there are no Cresna password forms or provider callback routes to register.
 
-```text
-https://YOUR_VERCEL_DOMAIN/api/auth/google/callback
-```
+Set the Firebase Web configuration variables in Vercel: `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, and `VITE_FIREBASE_APP_ID`. Keep Firebase Admin credentials server-only: `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, and `FIREBASE_ADMIN_PRIVATE_KEY`.
 
-Save the resulting credentials only as `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in Vercel. Google’s server-side flow requires a confidential web client and an exact authorized redirect URI; its client secret must stay outside the source tree. [2]
+## Step 3 — verify the Firebase/Vercel responsibility split
 
-## Step 3 — create Microsoft sign-in
+Firebase authenticates the browser identity. Vercel verifies the Firebase ID token, upserts the minimal identity record, enforces owner/admin boundaries, runs Stripe/RevenueCat/Shopify operations, and keeps AI provider secrets server-side. The current Cresna business data layer remains Drizzle over MySQL/TiDB; it is not accurate to claim that Firestore is already the source of truth. A Firestore migration must be designed, migrated, and tested separately before changing this statement.
 
-Sign in to the Microsoft Entra admin center, go to **Entra ID → App registrations → New registration**, create a Cresna web application, then record its **Application (client) ID**. In **Authentication**, add:
-
-```text
-https://YOUR_VERCEL_DOMAIN/api/auth/microsoft/callback
-```
-
-In **Certificates & secrets**, create a new client secret and immediately store it in Vercel as `MICROSOFT_CLIENT_SECRET`; store the client ID as `MICROSOFT_CLIENT_ID` and the selected tenant as `MICROSOFT_TENANT_ID`. Microsoft’s documentation calls for registering the web app, adding a redirect URI, and creating credentials through the app registration. [3]
-
-## Step 4 — implement the external authentication migration
-
-The current Cresna repository still uses its existing platform-specific OAuth adapter. After Google and Microsoft credentials exist, replace that adapter with server-side OAuth routes that issue Cresna sessions and persist only the minimal identity data needed for the account. The user interface should then show only **Continue with Google** and **Continue with Microsoft**—not a fake email/password form.
-
-The two callback paths above are planned external-auth endpoints. Do not register them with providers until the corresponding routes are implemented and deployed. Keep the existing `OWNER_OPEN_ID` rule only after mapping the owner’s new provider identity server-side; normal users must never obtain owner access from a client-side role.
+The configured owner is recognized server-side by `OWNER_OPEN_ID` or the case-insensitive `OWNER_EMAIL`; a client-provided role never grants owner access. Normal users receive the ordinary free/paid access rules.
 
 ## Step 5 — activate Stripe, then RevenueCat
 
@@ -81,9 +66,10 @@ Add these under **Vercel Project → Settings → Environment Variables**. Selec
 |---|---:|---|
 | `DATABASE_URL` | Yes | Managed MySQL/TiDB provider |
 | `JWT_SECRET` | Yes | Generate a long random secret; never reuse development values |
-| `OWNER_OPEN_ID` | After external auth migration | New server-side owner identity mapping |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | After Google app setup | Google Cloud Console |
-| `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_TENANT_ID` | After Microsoft app setup | Microsoft Entra admin center |
+| `OWNER_OPEN_ID` | Yes | Existing owner identity, retained for compatibility |
+| `OWNER_EMAIL` | Yes | Exact owner email used for Firebase identity mapping |
+| Firebase Web variables | Yes | Firebase project settings |
+| Firebase Admin variables | Yes | Firebase service-account credentials, server-only |
 | `STRIPE_SECRET_KEY`, `VITE_STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET` | After Stripe setup | Stripe Dashboard |
 | `REVENUECAT_WEBHOOK_AUTHORIZATION` | After RevenueCat webhook setup | New random value stored in both places |
 | AI provider key | After provider selection | Provider project dashboard |
@@ -91,13 +77,14 @@ Add these under **Vercel Project → Settings → Environment Variables**. Selec
 
 ## Safe order of operations
 
-1. Finish this initial Vercel deployment and note the final domain.
-2. Create the managed MySQL/TiDB database and add `DATABASE_URL` and a new `JWT_SECRET`.
-3. Build and deploy the external Google/Microsoft OAuth migration.
-4. Create Stripe Test-mode products and verify Stripe webhooks.
-5. Attach the real Stripe products to RevenueCat packages, offering, and paywall; verify RevenueCat webhooks.
-6. Add the AI provider key, apply privacy/retention controls, and test evidence-backed responses.
-7. Switch each provider from test to production only after the complete paid user journey succeeds.
+1. Confirm the Vercel deployment and final authorized Firebase domain.
+2. Add a production MySQL/TiDB database, `DATABASE_URL`, and a new `JWT_SECRET`.
+3. Enable Google and Microsoft in Firebase, add the Firebase Web/Admin variables, and verify token-authenticated API calls.
+4. Confirm `OWNER_EMAIL` and `OWNER_OPEN_ID` are correct before inviting any staff account.
+5. Create Stripe Test-mode products and verify Stripe webhooks.
+6. Attach real Stripe products to RevenueCat packages, offering, and paywall; verify RevenueCat webhooks.
+7. Add the server-only OpenRouter key, apply privacy/retention controls, and test evidence-backed responses.
+8. Switch providers from test to production only after the complete paid user journey succeeds.
 
 ## References
 

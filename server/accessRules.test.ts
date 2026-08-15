@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isClosedBetaAdmitted, isPermanentOwner, permitsBetaFeature } from "./accessRules";
+import { isClosedBetaAdmitted, isPermanentOwner, isPermanentOwnerIdentity, permitsBetaFeature } from "./accessRules";
 
 describe("beta feature access", () => {
   it("keeps paid and owner access independent from beta feature flags", () => {
@@ -18,6 +18,12 @@ describe("beta feature access", () => {
     expect(isPermanentOwner("other-open-id", "owner-open-id")).toBe(false);
     expect(isPermanentOwner(undefined, "owner-open-id")).toBe(false);
     expect(isPermanentOwner("owner-open-id", "")).toBe(false);
+  });
+
+  it("maps the configured owner email without accepting another identity", () => {
+    expect(isPermanentOwnerIdentity("firebase-uid", "Owner@Example.com", "legacy-owner", "owner@example.com")).toBe(true);
+    expect(isPermanentOwnerIdentity("firebase-uid", "other@example.com", "legacy-owner", "owner@example.com")).toBe(false);
+    expect(isPermanentOwnerIdentity("legacy-owner", null, "legacy-owner", "owner@example.com")).toBe(true);
   });
 
   it("admits only the permanent owner and active invited beta workspaces during closed beta", () => {
