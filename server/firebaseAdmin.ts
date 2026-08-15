@@ -1,11 +1,12 @@
-import { cert, getApps, initializeApp, type App } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
+import type { App } from "firebase-admin/app";
 import type { Request } from "express";
 
 let cachedApp: App | null = null;
 
-function getFirebaseAdminApp() {
+async function getFirebaseAdminApp() {
   if (cachedApp) return cachedApp;
+
+  const { cert, getApps, initializeApp } = await import("firebase-admin/app");
   if (getApps().length > 0) {
     cachedApp = getApps()[0]!;
     return cachedApp;
@@ -36,7 +37,8 @@ export async function verifyFirebaseRequest(req: Request) {
   if (!token) return null;
 
   try {
-    return await getAuth(getFirebaseAdminApp()).verifyIdToken(token);
+    const { getAuth } = await import("firebase-admin/auth");
+    return await getAuth(await getFirebaseAdminApp()).verifyIdToken(token);
   } catch {
     return null;
   }
