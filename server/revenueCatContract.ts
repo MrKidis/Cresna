@@ -1,4 +1,4 @@
-import type { SubscriptionPlanKey } from "./products";
+import type { SubscriptionPlanKey } from "./products.ts";
 
 /**
  * Logical identifiers prepared in RevenueCat. These values are not payment credentials

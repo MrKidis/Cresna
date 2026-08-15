@@ -1,8 +1,8 @@
 import "dotenv/config";
 import { createServer } from "http";
 import net from "net";
-import { createCresnaApp } from "./app";
-import { serveStatic, setupVite } from "./vite";
+import { createCresnaApp } from "./app.ts";
+import { serveStatic, setupVite } from "./vite.ts";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {

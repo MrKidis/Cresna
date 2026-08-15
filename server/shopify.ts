@@ -2,11 +2,11 @@ import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, 
 import type { Express, Request, Response } from "express";
 import express from "express";
 import { and, eq } from "drizzle-orm";
-import { collections, products, productDailyMetrics, storeDailyMetrics, stores } from "../drizzle/schema";
-import { consumeShopifyOAuthState, createShopifyOAuthState, getDb, setGrowthProfileScanStatus } from "./db";
-import { ENV } from "./_core/env";
-import { refreshRevenueImpactForStore } from "./recommendationEngine";
-import { refreshStoreIntelligence } from "./storeIntelligence";
+import { collections, products, productDailyMetrics, storeDailyMetrics, stores } from "../drizzle/schema.ts";
+import { consumeShopifyOAuthState, createShopifyOAuthState, getDb, setGrowthProfileScanStatus } from "./db.ts";
+import { ENV } from "./_core/env.ts";
+import { refreshRevenueImpactForStore } from "./recommendationEngine.ts";
+import { refreshStoreIntelligence } from "./storeIntelligence.ts";
 
 const SHOPIFY_SCOPES = ["read_orders", "read_products", "read_customers"];
 const SHOPIFY_API_VERSION = "2026-07";

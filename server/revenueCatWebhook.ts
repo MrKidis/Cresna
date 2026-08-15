@@ -1,9 +1,9 @@
 import { timingSafeEqual } from "crypto";
 import type { Express, Request, Response } from "express";
 import express from "express";
-import { ENV } from "./_core/env";
-import { updateRevenueCatEntitlement } from "./db";
-import { planFromRevenueCatEntitlement } from "./revenueCatContract";
+import { ENV } from "./_core/env.ts";
+import { updateRevenueCatEntitlement } from "./db.ts";
+import { planFromRevenueCatEntitlement } from "./revenueCatContract.ts";
 
 export type RevenueCatWebhookEvent = {
   type?: string;

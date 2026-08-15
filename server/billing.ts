@@ -1,8 +1,8 @@
 import Stripe from "stripe";
-import { getBetaInviteForUser, getRevenueCatBillingForUser, getWorkspaceProfile, listStripeCustomerReferences, updateStripeReferences } from "./db";
-import { ENV } from "./_core/env";
-import { isPermanentOwner } from "./accessRules";
-import { BillingInterval, SubscriptionPlanKey, subscriptionPlans } from "./products";
+import { getBetaInviteForUser, getRevenueCatBillingForUser, getWorkspaceProfile, listStripeCustomerReferences, updateStripeReferences } from "./db.ts";
+import { ENV } from "./_core/env.ts";
+import { isPermanentOwner } from "./accessRules.ts";
+import { BillingInterval, SubscriptionPlanKey, subscriptionPlans } from "./products.ts";
 
 const stripe = new Stripe(ENV.stripeSecretKey || "sk_missing");
 

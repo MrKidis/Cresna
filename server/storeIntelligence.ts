@@ -8,8 +8,8 @@ import {
   storeDailyMetrics,
   storeScanSnapshots,
   stores,
-} from "../drizzle/schema";
-import { getDb, getPrimaryStoreForUser } from "./db";
+} from "../drizzle/schema.ts";
+import { getDb, getPrimaryStoreForUser } from "./db.ts";
 
 type ScoreComponent = {
   key: "catalog_clarity" | "commerce_health" | "offer_readiness" | "brand_context";

@@ -1,12 +1,12 @@
 import express from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./oauth";
-import { registerStorageProxy } from "./storageProxy";
-import { registerShopifyRoutes } from "../shopify";
-import { registerRevenueCatWebhookRoutes } from "../revenueCatWebhook";
-import { handleStripeEvent, verifyStripeEvent } from "../billing";
-import { appRouter } from "../routers";
-import { createContext } from "./context";
+import { registerOAuthRoutes } from "./oauth.ts";
+import { registerStorageProxy } from "./storageProxy.ts";
+import { registerShopifyRoutes } from "../shopify.ts";
+import { registerRevenueCatWebhookRoutes } from "../revenueCatWebhook.ts";
+import { handleStripeEvent, verifyStripeEvent } from "../billing.ts";
+import { appRouter } from "../routers.ts";
+import { createContext } from "./context.ts";
 
 /**
  * Builds Cresna's HTTP application without binding a port. Local development

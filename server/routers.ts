@@ -1,9 +1,9 @@
 import { COOKIE_NAME } from "@shared/const";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { getSessionCookieOptions } from "./_core/cookies";
-import { systemRouter } from "./_core/systemRouter";
-import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { getSessionCookieOptions } from "./_core/cookies.ts";
+import { systemRouter } from "./_core/systemRouter.ts";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc.ts";
 import {
   getAnalyticsOverview,
   getCatalogProductsForUser,
@@ -30,20 +30,20 @@ import {
   updateGrowthProfile,
   requestMerchantWriteApproval,
   updateWorkspaceName,
-} from "./db";
-import { createBillingPortal, createSubscriptionCheckout, getBillingAccess, getPlatformBillingSummary, getUnpaidPreviewAccess } from "./billing";
-import { isClosedBetaAdmitted, isPermanentOwner, permitsBetaFeature } from "./accessRules";
-import { ENV } from "./_core/env";
-import { betaFeedbackInputSchema } from "./betaFeedback";
-import { beginShopifyAuthorization, syncShopifyStore } from "./shopify";
-import { approveRecommendationForUser, completeRecommendationForUser, dismissRecommendationForUser, generateRecommendationsForUser } from "./recommendationEngine";
-import { getStoreIntelligenceForUser, refreshStoreIntelligence } from "./storeIntelligence";
-import { generatePositioningDraft, generateProductDescriptionDraft, listAiActionDraftsForUser, updateAiActionDraftStatus } from "./aiActionStudio";
-import { answerOwnerAssistant } from "./ownerAssistant";
-import { getMonthlyAiActionLimit } from "./products";
-import { createAndDeliverBetaInvite } from "./betaInvitationEmail";
-import { ensureGrowthProfileContract } from "./growthProfileContract";
-import { requiresFinalBetaFeedbackForCheckout } from "./betaCheckoutPolicy";
+} from "./db.ts";
+import { createBillingPortal, createSubscriptionCheckout, getBillingAccess, getPlatformBillingSummary, getUnpaidPreviewAccess } from "./billing.ts";
+import { isClosedBetaAdmitted, isPermanentOwner, permitsBetaFeature } from "./accessRules.ts";
+import { ENV } from "./_core/env.ts";
+import { betaFeedbackInputSchema } from "./betaFeedback.ts";
+import { beginShopifyAuthorization, syncShopifyStore } from "./shopify.ts";
+import { approveRecommendationForUser, completeRecommendationForUser, dismissRecommendationForUser, generateRecommendationsForUser } from "./recommendationEngine.ts";
+import { getStoreIntelligenceForUser, refreshStoreIntelligence } from "./storeIntelligence.ts";
+import { generatePositioningDraft, generateProductDescriptionDraft, listAiActionDraftsForUser, updateAiActionDraftStatus } from "./aiActionStudio.ts";
+import { answerOwnerAssistant } from "./ownerAssistant.ts";
+import { getMonthlyAiActionLimit } from "./products.ts";
+import { createAndDeliverBetaInvite } from "./betaInvitationEmail.ts";
+import { ensureGrowthProfileContract } from "./growthProfileContract.ts";
+import { requiresFinalBetaFeedbackForCheckout } from "./betaCheckoutPolicy.ts";
 
 const closedBetaWorkspaceProcedure = protectedProcedure;
 

@@ -1,8 +1,8 @@
 import { and, desc, eq } from "drizzle-orm";
-import { aiActionDrafts, businessBrainEvents, products, recommendations } from "../drizzle/schema";
-import { invokeLLM } from "./_core/llm";
-import { getDb, getGrowthProfile, getPrimaryStoreForUser } from "./db";
-import { isDraftCapableRecommendationCategory } from "./recommendationEngine";
+import { aiActionDrafts, businessBrainEvents, products, recommendations } from "../drizzle/schema.ts";
+import { invokeLLM } from "./_core/llm.ts";
+import { getDb, getGrowthProfile, getPrimaryStoreForUser } from "./db.ts";
+import { isDraftCapableRecommendationCategory } from "./recommendationEngine.ts";
 
 type DraftPayload = { descriptionHtml?: string; seoTitle?: string; seoDescription?: string; notes?: string[]; positioning?: string; homepageHeadline?: string; proofPoints?: string[]; missingEvidence?: string[]; evidenceUsed?: string[] };
 

@@ -20,11 +20,11 @@ import {
   userNotificationPreferences,
   userOnboarding,
   users,
-} from "../drizzle/schema";
-import { ENV } from './_core/env';
-import { isPermanentOwnerIdentity } from "./accessRules";
-import { BetaFeedbackInput, toBetaFeedbackPersistenceValues } from "./betaFeedback";
-import { assertMerchantWriteApprovalEligible, merchantWriteOperationForDraft } from "./merchantWritePolicy";
+} from "../drizzle/schema.ts";
+import { ENV } from './_core/env.ts';
+import { isPermanentOwnerIdentity } from "./accessRules.ts";
+import { BetaFeedbackInput, toBetaFeedbackPersistenceValues } from "./betaFeedback.ts";
+import { assertMerchantWriteApprovalEligible, merchantWriteOperationForDraft } from "./merchantWritePolicy.ts";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 

@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
-import { ENV } from "./_core/env";
-import { createFoundingBetaInvite, setFoundingBetaInviteDelivery } from "./db";
+import { ENV } from "./_core/env.ts";
+import { createFoundingBetaInvite, setFoundingBetaInviteDelivery } from "./db.ts";
 
 export function getGmailDeliveryConfiguration() {
   const sender = ENV.gmailSmtpUser.trim();

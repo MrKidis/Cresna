@@ -1,5 +1,5 @@
-import { invokeLLM, type Message } from "./_core/llm";
-import { getOwnerOverview } from "./db";
+import { invokeLLM, type Message } from "./_core/llm.ts";
+import { getOwnerOverview } from "./db.ts";
 
 export type OwnerOverviewSummaryInput = {
   totalUsers: number;

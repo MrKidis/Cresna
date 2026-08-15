@@ -1,7 +1,7 @@
 import { and, desc, eq, gte, lte } from "drizzle-orm";
-import { businessBrainEvents, recommendationActions, recommendations, storeDailyMetrics } from "../drizzle/schema";
-import { getAggregateOutcomeLearningSignals, getAnalyticsOverview, getCatalogProductsForUser, getDb } from "./db";
-import { invokeLLM } from "./_core/llm";
+import { businessBrainEvents, recommendationActions, recommendations, storeDailyMetrics } from "../drizzle/schema.ts";
+import { getAggregateOutcomeLearningSignals, getAnalyticsOverview, getCatalogProductsForUser, getDb } from "./db.ts";
+import { invokeLLM } from "./_core/llm.ts";
 
 type Candidate = {
   category: "underperforming_sku" | "high_refunds" | "abandoned_cart" | "margin_erosion" | "restock" | "product_copy" | "pricing";

@@ -34,4 +34,4 @@ export function getMonthlyAiActionLimit(input: { accessSource: AccessSource; pla
   if (input.accessSource === "none") return 0;
   return input.plan === "growth" ? subscriptionPlans.growth.monthlyAiActions : subscriptionPlans.pro.monthlyAiActions;
 }
-import type { AccessSource } from "./accessRules";
+import type { AccessSource } from "./accessRules.ts";
