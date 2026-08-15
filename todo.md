@@ -96,7 +96,12 @@
 - [x] Correct authenticated workspace navigation overlap, stop unintended tab-navigation scroll resets, and standardize concise icon-led controls across desktop and mobile.
 - [x] Configure the Cresna growth-arrow mark as the repository and browser favicon with a portable public asset reference.
 - [ ] Plan a production authentication migration with Google and Microsoft OAuth buttons, no password email sign-up, and a server-side session/API implementation suitable for the non-Manus deployment.
+- [ ] Replace Cresna’s platform-specific authentication and hosted-data assumptions with Firebase Authentication (Google and Microsoft) and Firebase-hosted application data, verified by Vercel API routes.
+- [ ] Document the Firebase/Vercel responsibility split: Firebase for browser authentication and application data; Vercel for verified tokens, Stripe/RevenueCat webhooks, privileged operations, and server-side AI secrets.
 - [x] Document a durable AI architecture that protects user data, uses server-side tools and controlled memory, and does not claim GitHub Pages can host a persistent AI service on its own.
 - [ ] Configure and document a unified GitHub-to-Vercel deployment in which one Vercel domain serves Cresna’s frontend, secure API routes, OAuth callbacks, Stripe/RevenueCat webhooks, database access, and server-side AI.
 - [ ] Repair Cresna’s Vercel function routing so `/api` endpoints are deployed and verified before entering production secrets or registering external webhooks.
 - [x] Provide a production activation checklist for an externally hosted database, Google OAuth, Microsoft OAuth, Stripe/RevenueCat credentials, and a server-side AI provider, with secret values entered only through Vercel settings.
+- [ ] Add a repository-owned Ollama service definition, tool contract, and secure network configuration; document that GitHub stores and deploys the service configuration but does not run the persistent Ollama process itself.
+- [ ] Use the validated OpenRouter key for automatic Vercel-hosted AI with tool-capable, evidence-bound calls; keep Ollama as an optional adapter that never blocks the default deployment.
+- [ ] Preserve permanent owner access for the configured owner when signing in through Firebase by using a server-side owner email/identity mapping, never a client-provided role.

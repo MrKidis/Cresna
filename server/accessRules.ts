@@ -16,3 +16,13 @@ export function isClosedBetaAdmitted(accessSource: AccessSource) {
 export function isPermanentOwner(openId: string | null | undefined, configuredOwnerOpenId: string) {
   return Boolean(configuredOwnerOpenId) && openId === configuredOwnerOpenId;
 }
+
+export function isPermanentOwnerIdentity(
+  openId: string | null | undefined,
+  email: string | null | undefined,
+  configuredOwnerOpenId: string,
+  configuredOwnerEmail?: string | null,
+) {
+  if (isPermanentOwner(openId, configuredOwnerOpenId)) return true;
+  return Boolean(configuredOwnerEmail && email && email.trim().toLowerCase() === configuredOwnerEmail.trim().toLowerCase());
+}

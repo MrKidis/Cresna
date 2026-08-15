@@ -22,7 +22,7 @@ import {
   users,
 } from "../drizzle/schema";
 import { ENV } from './_core/env';
-import { isPermanentOwner } from "./accessRules";
+import { isPermanentOwnerIdentity } from "./accessRules";
 import { BetaFeedbackInput, toBetaFeedbackPersistenceValues } from "./betaFeedback";
 import { assertMerchantWriteApprovalEligible, merchantWriteOperationForDraft } from "./merchantWritePolicy";
 
@@ -75,7 +75,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values.lastSignedIn = user.lastSignedIn;
       updateSet.lastSignedIn = user.lastSignedIn;
     }
-    if (isPermanentOwner(user.openId, ENV.ownerOpenId)) {
+    if (isPermanentOwnerIdentity(user.openId, user.email, ENV.ownerOpenId, process.env.OWNER_EMAIL)) {
       values.role = 'admin';
       updateSet.role = 'admin';
     } else if (user.role !== undefined) {

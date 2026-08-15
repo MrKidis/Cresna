@@ -212,14 +212,22 @@ const normalizeToolChoice = (
   return toolChoice;
 };
 
-const resolveApiUrl = () =>
-  ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
+const openRouterConfigured = Boolean(process.env.AI_PROVIDER_API_KEY?.trim());
+const openRouterBaseUrl = "https://openrouter.ai/api/v1";
+
+const resolveApiUrl = () => {
+  if (openRouterConfigured) return `${openRouterBaseUrl}/chat/completions`;
+  return ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
     ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/chat/completions`
     : "https://forge.manus.im/v1/chat/completions";
+};
+
+const resolveApiKey = () =>
+  openRouterConfigured ? process.env.AI_PROVIDER_API_KEY!.trim() : ENV.forgeApiKey;
 
 const assertApiKey = () => {
-  if (!ENV.forgeApiKey) {
-    throw new Error("OPENAI_API_KEY is not configured");
+  if (!resolveApiKey()) {
+    throw new Error("An AI provider key is not configured");
   }
 };
 
@@ -363,7 +371,7 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
   };
 
   if (model) {
-    payload.model = model;
+    payload.model = openRouterConfigured && !model.includes("/") ? `openai/${model}` : model;
   }
 
   if (tools && tools.length > 0) {
@@ -405,7 +413,11 @@ export async function invokeLLM(params: InvokeParams): Promise<InvokeResult> {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${ENV.forgeApiKey}`,
+      authorization: `Bearer ${resolveApiKey()}`,
+      ...(openRouterConfigured ? {
+        "HTTP-Referer": "https://cresna.vercel.app",
+        "X-Title": "Cresna Commerce Intelligence",
+      } : {}),
     },
     body: JSON.stringify(payload),
   });
@@ -435,12 +447,20 @@ export type ModelsResponse = {
 export async function listLLMModels(): Promise<ModelsResponse> {
   assertApiKey();
 
-  const url = ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
-    ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/models`
-    : "https://forge.manus.im/v1/models";
+  const url = openRouterConfigured
+    ? `${openRouterBaseUrl}/models`
+    : ENV.forgeApiUrl && ENV.forgeApiUrl.trim().length > 0
+      ? `${ENV.forgeApiUrl.replace(/\/$/, "")}/v1/models`
+      : "https://forge.manus.im/v1/models";
 
   const response = await fetchWithBackoff(url, {
-    headers: { authorization: `Bearer ${ENV.forgeApiKey}` },
+    headers: {
+      authorization: `Bearer ${resolveApiKey()}`,
+      ...(openRouterConfigured ? {
+        "HTTP-Referer": "https://cresna.vercel.app",
+        "X-Title": "Cresna Commerce Intelligence",
+      } : {}),
+    },
   });
 
   if (!response.ok) {

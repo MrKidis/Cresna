@@ -20,6 +20,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { UnpaidPreviewProvider } from "./contexts/UnpaidPreviewContext";
 import Home from "./pages/Home";
+import AuthPage from "./pages/AuthPage";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -27,6 +28,7 @@ function Router() {
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/beta-access"} component={BetaAccess} />
+      <Route path={"/auth"} component={AuthPage} />
       <Route path={"/app"} component={Dashboard} />
       <Route path={"/app/profile"} component={GrowthProfile} />
       <Route path={"/app/owner-panel"} component={OwnerPanel} />
