@@ -2,7 +2,8 @@ import Stripe from "stripe";
 import { getBetaInviteForUser, getRevenueCatBillingForUser, getWorkspaceProfile, listStripeCustomerReferences, updateStripeReferences } from "./db.ts";
 import { ENV } from "./_core/env.ts";
 import { isPermanentOwner } from "./accessRules.ts";
-import { BillingInterval, SubscriptionPlanKey, subscriptionPlans } from "./products.ts";
+import { subscriptionPlans } from "./products.ts";
+import type { BillingInterval, SubscriptionPlanKey } from "./products.ts";
 
 const stripe = new Stripe(ENV.stripeSecretKey || "sk_missing");
 

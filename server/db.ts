@@ -1,7 +1,6 @@
 import { and, desc, eq, gt, gte } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import {
-  InsertUser,
   aiActionDrafts,
   betaAccessRequests,
   billingAccounts,
@@ -21,9 +20,11 @@ import {
   userOnboarding,
   users,
 } from "../drizzle/schema.ts";
+import type { InsertUser } from "../drizzle/schema.ts";
 import { ENV } from './_core/env.ts';
 import { isPermanentOwnerIdentity } from "./accessRules.ts";
-import { BetaFeedbackInput, toBetaFeedbackPersistenceValues } from "./betaFeedback.ts";
+import { toBetaFeedbackPersistenceValues } from "./betaFeedback.ts";
+import type { BetaFeedbackInput } from "./betaFeedback.ts";
 import { assertMerchantWriteApprovalEligible, merchantWriteOperationForDraft } from "./merchantWritePolicy.ts";
 
 let _db: ReturnType<typeof drizzle> | null = null;
