@@ -40,6 +40,12 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-brand-surface: var(--brand-surface);
+  --color-brand-surface-foreground: var(--brand-surface-foreground);
+  --color-brand-muted: var(--brand-muted);
+  --color-brand-muted-foreground: var(--brand-muted-foreground);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-accent-foreground: var(--brand-accent-foreground);
 }
 
 :root {
@@ -76,6 +82,12 @@
   --sidebar-accent-foreground: #17201e;
   --sidebar-border: #d9ddd5;
   --sidebar-ring: #a3c83c;
+  --brand-surface: #17201e;
+  --brand-surface-foreground: #f8f7f2;
+  --brand-muted: #e9ebe5;
+  --brand-muted-foreground: #65706b;
+  --brand-accent: #d9fa55;
+  --brand-accent-foreground: #17201e;
 }
 
 .dark {
@@ -111,6 +123,12 @@
   --sidebar-accent-foreground: #f2f7ef;
   --sidebar-border: #33473c;
   --sidebar-ring: #d9fa55;
+  --brand-surface: #17201e;
+  --brand-surface-foreground: #f2f7ef;
+  --brand-muted: #26372e;
+  --brand-muted-foreground: #aab8b0;
+  --brand-accent: #d9fa55;
+  --brand-accent-foreground: #17201e;
 }
 
 /* Legacy Cresna surface utilities remain theme-safe while the workspace adopts semantic tokens incrementally. */

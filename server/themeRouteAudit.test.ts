@@ -29,5 +29,8 @@ describe("Cresna theme and route audit", () => {
     expect(layout).toContain("bg-background");
     expect(aiStudio).toContain("text-card-foreground");
     expect(aiStudio).toContain("focus:ring-ring");
+    expect(aiStudio).toContain("bg-brand-surface");
+    expect(read("client/src/pages/ConnectStore.tsx")).toContain("bg-brand-surface");
+    expect(read("client/src/pages/OwnerPanel.tsx")).toContain("bg-brand-surface");
   });
 });

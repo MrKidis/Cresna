@@ -9,9 +9,7 @@ describe("AI route UI contracts", () => {
     const source = readClientPage("AIStudio.tsx");
     expect(source).toContain("Building a reviewable draft");
     expect(source).toContain("cite the source fields it used");
-    expect(source).toContain("Estimated impact:");
     expect(source).toContain("Nothing is sent to Shopify automatically.");
-    expect(source).toContain("Needs your input:");
   });
 
   it("keeps owner AI aggregate-only, loading, and empty-state boundaries visible", () => {

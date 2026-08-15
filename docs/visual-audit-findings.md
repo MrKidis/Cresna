@@ -1,0 +1,6 @@
+# Cresna visual audit findings
+
+The current desktop captures cover the public home page, Firebase authentication, workspace overview, Growth Profile, AI Action Studio, Owner Panel, Billing, Settings, Connect Store, Orders, Drafts, Shipping, Products, and Customers. The routes retain visible Cresna branding, the Owner Panel is separated from normal workspace navigation, and unsupported Shopify capabilities display explicit unavailable or connect-first states rather than simulated controls.
+
+The capture set is currently light-theme desktop coverage. A complete dark-theme and mobile matrix remains required for Billing, Settings, Connect Store, and the commerce subroutes, as does a final semantic-token pass for hardcoded brand surfaces and native control focus states. The merchant draft component is route-owned and now has realistic evidence/unknown-impact render coverage, but live connected-store generation still requires a real Shopify catalog.
+The second capture batch covered Billing, Settings, Connect Store, Orders, Drafts, Shipping, Products, and Customers at desktop and 375px mobile widths. The mobile layouts keep headings, permission boundaries, cards, and unavailable-state explanations within the viewport without visible clipping. These captures are still the light theme; a dark-theme capture matrix is required before closing the full theme audit.

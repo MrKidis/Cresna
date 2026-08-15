@@ -88,6 +88,8 @@
 - [ ] Improve the merchant and owner AI experiences with clear working/progress states, evidence citations from available connected data, actionable next steps, and resilient helpful fallbacks that preserve privacy and never invent tool access.
 - [x] Build a refined RevenueCat-ready paywall presentation in Cresna’s source with Free, Pro, and Growth capability boundaries, prepared package identifiers, and an explicit unlinked-products state.
 - [ ] Audit active routes for capitalized Cresna branding, design consistency, theme contrast, responsive clipping, and server runtime errors.
+- [ ] Verify billing, settings, connect-store, and commerce subroutes in both light and dark themes with route-level screenshots and documented contrast/clipping results.
+- [ ] Add deterministic route/component evidence for the remaining audited routes instead of relying only on partial screenshots.
 - [ ] Verify the merchant AI route end-to-end so generated drafts surface evidence citations, honest estimated-impact/unknown states, and actionable next steps in the rendered UI.
 - [x] Add a rendered merchant AI loading/progress test and a route-owned draft summary test with realistic evidence, unknown-impact, citation, and next-step output.
 - [x] Add a rendered Owner Panel fallback test and wire assistant failures into a truthful aggregate-only fallback message.
@@ -116,3 +118,6 @@
 - [x] Verify merchant and owner AI progress states, citations, actionable next steps, and privacy-safe fallbacks across both assistants.
 - [x] Preserve permanent owner access for the configured owner when signing in through Firebase by using a server-side owner email/identity mapping, never a client-provided role.
 - [x] Fix Vercel serverless API startup failure caused by unresolved extensionless `server/_core/app` import; redeploy and verify `/api/health` and `/api/trpc/auth.me`.
+- [x] Document deliberate native select/checkbox exceptions, required semantic focus states, and the remaining route-wide theme audit scope.
+- [x] Record the live RevenueCat project state and the safe activation sequence; keep paywall publication blocked while the project has no registered app or real products.
+- [x] Replace the stale source-string AI UI assertion with the rendered component contracts so the full Vitest suite remains green.
