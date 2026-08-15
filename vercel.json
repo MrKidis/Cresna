@@ -6,7 +6,8 @@
   "outputDirectory": "dist/public",
   "functions": {
     "api/[...path].ts": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "includeFiles": ["server/**", "shared/**", "drizzle/**"]
     }
   },
   "rewrites": [
