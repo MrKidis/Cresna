@@ -1,4 +1,5 @@
 import DashboardLayout from "@/components/DashboardLayout";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowUpRight, LockKeyhole } from "lucide-react";
 import { useLocation } from "wouter";

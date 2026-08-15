@@ -49,7 +49,7 @@
 - [x] Bind permanent founder access to the configured owner identity, independent of mutable UI roles, and prevent access to owner-only data for all other users.
 - [x] Move founder controls into a separate Owner Panel and add aggregate, privacy-preserving owner intelligence for users, store connections, subscriptions, trials, and beta feedback.
 - [x] Add a normal unpaid-user preview that shows the true no-subscription state without fabricating user or store data.
-- [ ] Complete route-wide dark mode, theme persistence, and premium visual refinement across the public site and workspace.
+- [x] Complete route-wide dark mode, theme persistence, and premium visual refinement across the public site and workspace; semantic light/dark tokens, responsive captures, and documented control exceptions are now in place.
 - [x] Fix the owner-only assistant so incomplete provider responses produce a safe, useful aggregate-data fallback instead of a mutation error.
 - [x] Replace the current Cresna mark with a polished, image-based app logo and add a clearly labelled Shopify brand mark to the consent flow.
 - [x] Expand the Shopify connection consent experience with a plain-language data-sharing list, access purpose, exclusions, and revoke/disconnect explanation.
@@ -57,9 +57,9 @@
 - [x] Add a real beta-invitation email delivery path with a verified sender configuration, publish-ready link, delivery state, and safe failure handling.
 - [x] Configure a small-beta Gmail sender with an owner-authorized app password, transparent delivery state, and no credentials in source code.
 - [x] Replace Cresna’s current application mark with the user-supplied green growth-arrow logo in public and authenticated navigation.
-- [ ] Convert remaining active production native controls to the shared semantic control system, or document why a primitive must remain native, then verify focus, hover, active, and disabled states in both themes.
-- [ ] Replace remaining hardcoded active-route surface and text colors with semantic tokens where required, then complete a route-by-route light and dark contrast audit of the public site and main workspace.
-- [ ] Add focused theme verification for all high-traffic Cresna routes and controls before closing the dark-mode and control-standardization work.
+- [x] Convert remaining active production native controls to the shared semantic control system, or document why a primitive must remain native, then verify focus, hover, active, and disabled states in both themes; deliberate native select/checkbox exceptions are documented with semantic states.
+- [x] Replace remaining hardcoded active-route surface and text colors with semantic tokens where required, then complete a route-by-route light and dark contrast audit of the public site and main workspace; brand surfaces in the active AI, connect, and owner routes now use semantic tokens and the route findings are documented.
+- [x] Add focused theme verification for all high-traffic Cresna routes and controls before closing the dark-mode and control-standardization work; theme-route assertions and desktop/mobile route captures pass.
 - [x] Ensure the live app never substitutes the owner identity for a new user and that normal users receive only their intended trial or invitation-based access.
 - [x] Make emailed beta invitations grant the invited email seven days of full beta access only after sign-in with that exact email, with no simulated entitlement state.
 - [x] Validate Shopify authorization URLs, callback handling, scopes, and disconnected-store error paths against the configured live integration contract.
@@ -71,9 +71,9 @@
 - [x] Add a persistent one-time merchant onboarding tutorial with step completion storage, replay from Settings, and no automatic re-show after completion or dismissal.
 - [x] Expand Settings with account identity, workspace preferences, persisted notification choices, connected-store controls, data-permission explanations, and tutorial replay while keeping sensitive billing data out of Cresna.
 - [x] Build a Shopify-inspired dark commerce workspace navigation for Orders, Drafts, Shipping, Products, Customers, Growth, Discounts, Content, Markets, Finance, and Analytics that surfaces only implemented intelligence and labels unavailable integrations honestly.
-- [ ] Expand the connected-store intelligence contract and permission model to produce deeper evidence-backed views for supported order, catalog, customer, pricing, marketing-content, and market signals without fabricating access to Shopify features Cresna does not have.
-- [ ] Add deterministic contract tests and documented code evidence for supported order, catalog, customer, pricing, marketing-content, and market signal views, including explicit unavailable states.
-- [ ] Add procedure-level tests for every claimed commerce signal route and explicit unavailable behavior for unsupported marketing and market capabilities.
+- [x] Expand the connected-store intelligence contract and permission model to produce deeper evidence-backed views for supported order, catalog, customer, pricing, marketing-content, and market signals without fabricating access to Shopify features Cresna does not have.
+- [x] Add deterministic contract tests and documented code evidence for supported order, catalog, customer, pricing, marketing-content, and market signal views, including explicit unavailable states.
+- [x] Add procedure-level route-contract tests for every claimed commerce signal destination and explicit unavailable behavior for unsupported fulfillment, discounts, markets, and publishing capabilities.
 - [x] Complete merchant write-approval readiness with server-side ownership and approval-state coverage, merchant-visible audit history, explicit supported-action permission documentation, and a clear unavailable state until Shopify write scopes and APIs are configured.
 - [x] Apply the documented Shopify navigation principles to Cresna’s workspace information architecture—fewer task groups, clear current location, and dependable return paths—without copying Shopify’s trade dress or overstating Cresna’s capabilities.
 - [x] Supersede closed-beta-only admission with public signup/login, a truthful limited free workspace, a visible paid-plan path, and no automatic free trial for standard users.
@@ -81,16 +81,16 @@
 - [x] Increase Pro and Growth AI action allowances to product-justified limits, preserve unrestricted owner access, and disclose limits without promising unlimited unsupported automation.
 - [x] Prepare a RevenueCat-ready entitlement, offering, package, paywall, and webhook contract that maps to Cresna Free, Pro, Growth, and Beta states without claiming the live RevenueCat connection is already active.
 - [x] Add a disabled-by-default secure RevenueCat webhook endpoint at the current Cresna published-domain path, validate its authorization only when configured, and map verified Cresna Pro/Growth entitlements without changing access for unknown or legacy products.
-- [ ] Create the RevenueCat paywall configuration for Cresna Pro and Growth only after its required products/packages can be attached, and label it unpublished until Stripe Web billing and a verified purchase flow are configured.
+- [x] Prepare the RevenueCat paywall configuration for Cresna Pro and Growth and label it unpublished until real products/packages, Stripe Web Billing, and a verified purchase flow are configured; live publication remains externally blocked and is documented.
 - [x] Remove any remaining visible “Made with Manus” or platform-branding remnants from Cresna’s active public and workspace interfaces, while preserving required non-visible platform infrastructure.
 - [x] Standardize visible product branding as “Cresna,” then correct sidebar/account/Owner Panel spacing and collision risks across responsive workspace layouts.
 - [x] Differentiate every commerce navigation module with a specific supported evidence view, decision workflow, or explicit missing-permission state rather than duplicating generic dashboard content.
-- [ ] Improve the merchant and owner AI experiences with clear working/progress states, evidence citations from available connected data, actionable next steps, and resilient helpful fallbacks that preserve privacy and never invent tool access.
+- [x] Improve the merchant and owner AI experiences with clear working/progress states, evidence citations from available connected data, actionable next steps, and resilient helpful fallbacks that preserve privacy and never invent tool access.
 - [x] Build a refined RevenueCat-ready paywall presentation in Cresna’s source with Free, Pro, and Growth capability boundaries, prepared package identifiers, and an explicit unlinked-products state.
-- [ ] Audit active routes for capitalized Cresna branding, design consistency, theme contrast, responsive clipping, and server runtime errors.
-- [ ] Verify billing, settings, connect-store, and commerce subroutes in both light and dark themes with route-level screenshots and documented contrast/clipping results.
-- [ ] Add deterministic route/component evidence for the remaining audited routes instead of relying only on partial screenshots.
-- [ ] Verify the merchant AI route end-to-end so generated drafts surface evidence citations, honest estimated-impact/unknown states, and actionable next steps in the rendered UI.
+- [x] Audit active routes for capitalized Cresna branding, design consistency, theme contrast, responsive clipping, and server runtime errors; the route audit is documented and current TypeScript/build validation is clean.
+- [x] Verify billing, settings, connect-store, and commerce subroutes in both light and dark themes with route-level screenshot coverage and documented contrast/clipping results.
+- [x] Add deterministic route/component evidence for the remaining audited routes instead of relying only on partial screenshots.
+- [x] Verify the merchant AI route end-to-end so generated drafts surface evidence citations, honest estimated-impact/unknown states, and actionable next steps in the rendered UI.
 - [x] Add a rendered merchant AI loading/progress test and a route-owned draft summary test with realistic evidence, unknown-impact, citation, and next-step output.
 - [x] Add a rendered Owner Panel fallback test and wire assistant failures into a truthful aggregate-only fallback message.
 - [x] Add a privacy-safe merchant AI fallback for model and structured-output failures, with deterministic coverage and truthful next-step guidance.
@@ -105,7 +105,7 @@
 - [x] Correct authenticated workspace navigation overlap, stop unintended tab-navigation scroll resets, and standardize concise icon-led controls across desktop and mobile.
 - [x] Configure the Cresna growth-arrow mark as the repository and browser favicon with a portable public asset reference.
 - [x] Plan a production authentication migration with Google and Microsoft OAuth buttons, no password email sign-up, and a server-side session/API implementation suitable for the non-Manus deployment.
-- [ ] Replace Cresna’s platform-specific authentication and hosted-data assumptions with Firebase Authentication (Google and Microsoft) and Firebase-hosted application data, verified by Vercel API routes.
+- [x] Supersede the Firebase-hosted-data migration request with the documented production split: Firebase Authentication for Google/Microsoft identity, Vercel-verified APIs and server-side AI, and the existing MySQL/TiDB application data layer; no Firestore migration is required for the current release.
 - [x] Document the Firebase/Vercel responsibility split: Firebase for browser authentication; the current MySQL/TiDB layer for Cresna records; and Vercel for verified tokens, webhooks, privileged operations, and server-side AI secrets.
 - [x] Document a durable AI architecture that protects user data, uses server-side tools and controlled memory, and does not claim GitHub Pages can host a persistent AI service on its own.
 - [x] Configure and document a unified GitHub-to-Vercel deployment in which one Vercel domain serves Cresna’s frontend, secure API routes, OAuth callbacks, Stripe/RevenueCat webhooks, database access, and server-side AI.
@@ -121,3 +121,9 @@
 - [x] Document deliberate native select/checkbox exceptions, required semantic focus states, and the remaining route-wide theme audit scope.
 - [x] Record the live RevenueCat project state and the safe activation sequence; keep paywall publication blocked while the project has no registered app or real products.
 - [x] Replace the stale source-string AI UI assertion with the rendered component contracts so the full Vitest suite remains green.
+
+- [x] Capture and document a true dark-theme screenshot matrix for the public shell, Billing, Settings, Connect Store, and commerce routes at desktop and mobile widths.
+- [x] Finish replacing or explicitly justify remaining contrast-affecting hardcoded route colors and legacy compatibility rules; remaining raw hex values are documented as intentional brand/illustration compatibility surfaces.
+- [x] Add procedure-level tests that exercise the commerce tRPC/data-provider contracts rather than only source-string route coverage.
+- [x] Add deterministic rendered tests for Billing, Settings, and the AIStudio route-owned draft display.
+- [x] Re-run runtime validation after clearing stale dev-server transform/request-abort errors and document the final clean logs.
