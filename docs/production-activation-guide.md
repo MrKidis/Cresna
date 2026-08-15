@@ -54,7 +54,7 @@ Test Pro, Growth, expiration, cancellation, duplicate delivery, and unknown-prod
 
 ## Step 6 — use a server-side AI provider responsibly
 
-Create a separate provider project for Cresna, set a spending limit, and create a server-only API key. Store it in Vercel as the provider-specific secret, for example `OPENAI_API_KEY`. The deployed app should call the provider from the backend only; never embed the key in the Vite client bundle.
+Use the validated OpenRouter project for Cresna, set an appropriate spending limit, and store its server-only key in Vercel as `AI_PROVIDER_API_KEY`. The deployed app calls OpenRouter from the backend only; never embed the key in the Vite client bundle. The optional Ollama adapter is documented separately and is disabled unless a private persistent endpoint is explicitly configured.
 
 Cresna’s AI may use merchant-authorized store data to answer an individual request, cite the fields used, create a reviewable draft, and record an approved outcome. It must not send private merchant data into a shared training set, claim hidden tool actions, or retain user conversations in function memory. Durable user preferences, consent, draft history, and summarized outcomes belong in the database.
 
@@ -83,8 +83,8 @@ Add these under **Vercel Project → Settings → Environment Variables**. Selec
 4. Confirm `OWNER_EMAIL` and `OWNER_OPEN_ID` are correct before inviting any staff account.
 5. Create Stripe Test-mode products and verify Stripe webhooks.
 6. Attach real Stripe products to RevenueCat packages, offering, and paywall; verify RevenueCat webhooks.
-7. Add the server-only OpenRouter key, apply privacy/retention controls, and test evidence-backed responses.
-8. Switch providers from test to production only after the complete paid user journey succeeds.
+7. Add the server-only OpenRouter key as `AI_PROVIDER_API_KEY`, apply privacy/retention controls, and test evidence-backed responses. Leave `AI_PROVIDER` unset or set to `openrouter` for the default Vercel path.
+8. RevenueCat will show “Select an offering” until real Stripe Web Billing products are attached to Cresna Pro/Growth packages and a default offering. This is an expected unpublished draft state, not a runtime failure. Attach the products, then verify the paid user journey and webhook events before switching providers from test to production.
 
 ## References
 

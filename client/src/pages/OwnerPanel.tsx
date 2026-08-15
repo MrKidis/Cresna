@@ -3,6 +3,8 @@ import { EmptyWorkspaceCard, WorkspaceFrame } from "@/components/WorkspaceFrame"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
+import { OwnerAIStatusSummary } from "@/components/OwnerAIStatusSummary";
+import { OwnerAIFallbackNotice } from "@/components/OwnerAIFallbackNotice";
 import { Bot, Loader2, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -25,6 +27,7 @@ export default function OwnerPanel() {
   const utils = trpc.useUtils();
   const [email, setEmail] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [assistantFailed, setAssistantFailed] = useState(false);
   const accessRequests = trpc.founder.accessRequests.useQuery(undefined, { enabled: Boolean(data) });
 
   const invite = trpc.founder.inviteBeta.useMutation({
@@ -42,8 +45,8 @@ export default function OwnerPanel() {
     onError: mutationError => toast.error(mutationError.message),
   });
   const assistant = trpc.founder.askAssistant.useMutation({
-    onSuccess: ({ answer }) => setMessages(previous => [...previous, { role: "assistant", content: answer }]),
-    onError: mutationError => toast.error(mutationError.message),
+    onSuccess: ({ answer }) => { setAssistantFailed(false); setMessages(previous => [...previous, { role: "assistant", content: answer }]); },
+    onError: mutationError => { setAssistantFailed(true); toast.error(mutationError.message); },
   });
   const inviteAccessRequest = trpc.founder.inviteAccessRequest.useMutation({
     onSuccess: result => {
@@ -105,6 +108,8 @@ export default function OwnerPanel() {
             <h2 className="mt-3 text-2xl font-extrabold tracking-[-0.05em]">Ask about platform health.</h2>
             <p className="mt-3 text-sm leading-6 text-[#d9e1dc]">This assistant receives the stored aggregate snapshot shown above. It cannot browse individual seller data or retrieve customer, order, product, or payment details.</p>
           </div>
+          <OwnerAIStatusSummary isLoading={assistant.isPending} emptyStateMessage="Ask a question about the aggregate Cresna platform snapshot." />
+          <OwnerAIFallbackNotice visible={assistantFailed} />
           <AIChatBox
             messages={messages}
             onSendMessage={sendOwnerQuestion}

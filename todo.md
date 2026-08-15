@@ -72,12 +72,14 @@
 - [x] Expand Settings with account identity, workspace preferences, persisted notification choices, connected-store controls, data-permission explanations, and tutorial replay while keeping sensitive billing data out of Cresna.
 - [x] Build a Shopify-inspired dark commerce workspace navigation for Orders, Drafts, Shipping, Products, Customers, Growth, Discounts, Content, Markets, Finance, and Analytics that surfaces only implemented intelligence and labels unavailable integrations honestly.
 - [ ] Expand the connected-store intelligence contract and permission model to produce deeper evidence-backed views for supported order, catalog, customer, pricing, marketing-content, and market signals without fabricating access to Shopify features Cresna does not have.
+- [ ] Add deterministic contract tests and documented code evidence for supported order, catalog, customer, pricing, marketing-content, and market signal views, including explicit unavailable states.
+- [ ] Add procedure-level tests for every claimed commerce signal route and explicit unavailable behavior for unsupported marketing and market capabilities.
 - [x] Complete merchant write-approval readiness with server-side ownership and approval-state coverage, merchant-visible audit history, explicit supported-action permission documentation, and a clear unavailable state until Shopify write scopes and APIs are configured.
 - [x] Apply the documented Shopify navigation principles to Cresna’s workspace information architecture—fewer task groups, clear current location, and dependable return paths—without copying Shopify’s trade dress or overstating Cresna’s capabilities.
 - [x] Supersede closed-beta-only admission with public signup/login, a truthful limited free workspace, a visible paid-plan path, and no automatic free trial for standard users.
 - [x] Change email-bound beta access to a non-reusable two-day entitlement that starts only after the invited email signs in, displays a timer, and requires feedback at expiry before paid-plan continuation.
 - [x] Increase Pro and Growth AI action allowances to product-justified limits, preserve unrestricted owner access, and disclose limits without promising unlimited unsupported automation.
-- [ ] Prepare a RevenueCat-ready entitlement, offering, package, paywall, and webhook contract that maps to Cresna Free, Pro, Growth, and Beta states without claiming the live RevenueCat connection is already active.
+- [x] Prepare a RevenueCat-ready entitlement, offering, package, paywall, and webhook contract that maps to Cresna Free, Pro, Growth, and Beta states without claiming the live RevenueCat connection is already active.
 - [x] Add a disabled-by-default secure RevenueCat webhook endpoint at the current Cresna published-domain path, validate its authorization only when configured, and map verified Cresna Pro/Growth entitlements without changing access for unknown or legacy products.
 - [ ] Create the RevenueCat paywall configuration for Cresna Pro and Growth only after its required products/packages can be attached, and label it unpublished until Stripe Web billing and a verified purchase flow are configured.
 - [x] Remove any remaining visible “Made with Manus” or platform-branding remnants from Cresna’s active public and workspace interfaces, while preserving required non-visible platform infrastructure.
@@ -87,23 +89,25 @@
 - [x] Build a refined RevenueCat-ready paywall presentation in Cresna’s source with Free, Pro, and Growth capability boundaries, prepared package identifiers, and an explicit unlinked-products state.
 - [ ] Audit active routes for capitalized Cresna branding, design consistency, theme contrast, responsive clipping, and server runtime errors.
 - [ ] Verify the merchant AI route end-to-end so generated drafts surface evidence citations, honest estimated-impact/unknown states, and actionable next steps in the rendered UI.
+- [x] Add a rendered merchant AI loading/progress test and a route-owned draft summary test with realistic evidence, unknown-impact, citation, and next-step output.
+- [x] Add a rendered Owner Panel fallback test and wire assistant failures into a truthful aggregate-only fallback message.
 - [x] Add a privacy-safe merchant AI fallback for model and structured-output failures, with deterministic coverage and truthful next-step guidance.
-- [ ] Add deterministic tests for owner and merchant AI UI contracts covering progress/loading text, fallback rendering, and citation/next-step visibility.
+- [x] Add deterministic tests for owner and merchant AI UI contracts covering progress/loading text, fallback rendering, and citation/next-step visibility.
 - [x] Create a sanitized downloadable Cresna source ZIP after final validation, excluding secrets, generated artifacts, and local dependency folders.
 - [x] Update public, authenticated, and billing copy to distinguish available free features, paid-only features, invite-only beta access, configured Stripe behavior, and the pending RevenueCat activation path truthfully.
 - [x] Enforce beta-expiry final-feedback completion before an expired tester can begin paid checkout, with a server-side checkout guard and a direct user-interface handoff back to the final feedback page.
 - [x] Fix the first-use Growth Profile query so an authenticated workspace with no saved profile receives a stable empty-state contract rather than an undefined query result.
 - [x] Prepare a sanitized GitHub/Vercel handoff package with deployment documentation, environment-variable inventory, Stripe/RevenueCat webhook-path guidance, and no committed secrets.
 - [x] Audit and prepare a GitHub Pages-compatible Cresna frontend export while retaining a separate secure API deployment for OAuth, Stripe, RevenueCat webhooks, user data, and server-side AI. Superseded by the user-selected unified Vercel deployment.
-- [ ] Resolve the RevenueCat “Select an offering” draft-state issue by attaching the Cresna paywall only after actual Stripe Web Billing packages are present, and document why this cannot be completed with no connected products.
+- [x] Resolve the RevenueCat “Select an offering” draft-state issue by attaching the Cresna paywall only after actual Stripe Web Billing packages are present, and document why this cannot be completed with no connected products.
 - [x] Correct authenticated workspace navigation overlap, stop unintended tab-navigation scroll resets, and standardize concise icon-led controls across desktop and mobile.
 - [x] Configure the Cresna growth-arrow mark as the repository and browser favicon with a portable public asset reference.
 - [x] Plan a production authentication migration with Google and Microsoft OAuth buttons, no password email sign-up, and a server-side session/API implementation suitable for the non-Manus deployment.
 - [ ] Replace Cresna’s platform-specific authentication and hosted-data assumptions with Firebase Authentication (Google and Microsoft) and Firebase-hosted application data, verified by Vercel API routes.
 - [x] Document the Firebase/Vercel responsibility split: Firebase for browser authentication; the current MySQL/TiDB layer for Cresna records; and Vercel for verified tokens, webhooks, privileged operations, and server-side AI secrets.
 - [x] Document a durable AI architecture that protects user data, uses server-side tools and controlled memory, and does not claim GitHub Pages can host a persistent AI service on its own.
-- [ ] Configure and document a unified GitHub-to-Vercel deployment in which one Vercel domain serves Cresna’s frontend, secure API routes, OAuth callbacks, Stripe/RevenueCat webhooks, database access, and server-side AI.
-- [ ] Repair Cresna’s Vercel function routing so `/api` endpoints are deployed and verified before entering production secrets or registering external webhooks.
+- [x] Configure and document a unified GitHub-to-Vercel deployment in which one Vercel domain serves Cresna’s frontend, secure API routes, OAuth callbacks, Stripe/RevenueCat webhooks, database access, and server-side AI.
+- [x] Repair Cresna’s Vercel function routing so `/api` endpoints are deployed and verified before entering production secrets or registering external webhooks.
 - [x] Provide a production activation checklist for an externally hosted database, Google OAuth, Microsoft OAuth, Stripe/RevenueCat credentials, and a server-side AI provider, with secret values entered only through Vercel settings.
 - [x] Add a repository-owned Ollama service definition, tool contract, and secure network configuration; document that GitHub stores and deploys the service configuration but does not run the persistent Ollama process itself.
 - [x] Use the validated OpenRouter key for automatic Vercel-hosted AI with tool-capable, evidence-bound calls; keep Ollama as an optional adapter that never blocks the default deployment.
